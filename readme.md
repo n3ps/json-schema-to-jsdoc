@@ -1,6 +1,6 @@
 # JSON Schema to JSDoc
 
-Useful when you already have a JSON Schema and want to provide document its types. Best with multiple definitions.
+Useful when you already have a JSON Schema and want to document its types. Best with multiple definitions.
 
 
 ## Usage
