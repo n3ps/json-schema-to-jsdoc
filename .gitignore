@@ -1,0 +1,5 @@
+node_modules/
+
+# Generated files
+out/
+docs.js

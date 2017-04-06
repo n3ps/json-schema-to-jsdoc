@@ -1,0 +1,27 @@
+{
+  "name": "json-schema-to-jsdoc",
+  "version": "0.0.1",
+  "description": "JSON Schema to JSDoc generator",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha",
+    "example": "node sample.js"
+  },
+  "keywords": [
+    "JSON",
+    "schema",
+    "jsdoc",
+    "jsonschema",
+    "generator"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "json-pointer": "^0.6.0",
+    "json-schema-defaults": "^0.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  }
+}
