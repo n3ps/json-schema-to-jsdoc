@@ -1,57 +1,79 @@
 const fs = require('fs');
 const json = require('json-pointer');
 
-// TODO: 
-// Non-nullable types
-// Multiple types
-// Recurse /definitions
-// Remove user code
-
-const schema = require('./message');
-const path = '/definitions/messages';
-
 module.exports = generate;
 
-function generate(item) {console.log(item);
-  // Custom
-  const itemTitle = 'message';
-  const dataPath = `${path}/${item}/properties/data/properties`;
-  const data = json.has(schema, dataPath) ? json.get(schema, dataPath) : {};
-  const requiredPath = `${path}/${item}/properties/data/required`;
-  const required = json.has(schema, requiredPath) ? json.get(schema, requiredPath) : [];
+function generate(schema, options) {
+  let jsdoc = '';
 
-  let jsdoc = '/**\n';
-  jsdoc += writeTitle(item, itemTitle);
+  if (!schema || Object.keys(schema).length === 0) {
+    return jsdoc;
+  }
 
-  for (let field in data) {
-    // TODO: Optional fields nested under an options object?
-    let isOptional = !required.includes(field);
-    jsdoc += writeParam(field, getType(field, data[field]), 'Description goes here', isOptional);
-  };
+  jsdoc += '/**\n';
+  jsdoc += writeDescription(schema);
+
+  if (!json.has(schema, '/properties')){
+   return jsdoc;
+  }
+
+  jsdoc += processProperties(schema);
 
   jsdoc += '  */\n';
+
+  jsdoc += writeType(schema);
 
   return jsdoc;
 }
 
-function getType(fieldName, keywords) {
-  if (keywords.hasOwnProperty('$ref')) {
-    return upperFirst(fieldName);
+function processProperties(schema, nested = false) {
+  const props = json.get(schema, '/properties');
+  const required = json.has(schema, '/required') ? json.get(schema, '/required') : [];
+
+  let text = '';
+  for (let property in props) {
+    if (props[property].type === 'object' && props[property].properties) {
+      text += `  * @param {object} ${property}\n`;
+      text += processProperties(props[property], true);
+    } else {
+      let prefix = nested ? 'params.' : '';
+      let optional = !required.includes(property);
+      let type = getType(props[property]) || upperFirst(property);
+      text += writeParam(type, prefix + property, '', optional);
+    }
   }
-  return keywords.type;
+  return text;
 }
 
-function writeParam(field, type = '', description, isOptional) {
-  const fieldTemplate = isOptional ? `[${field}]` : field;
+function writeDescription(schema, suffix = 'object') {
+  let text = schema.description || `Creates a ${schema.id} ${suffix}`;
+  return `  * ${text}\n  *\n`;
+}
+
+function writeParam(type = '', field, description, optional) {
+  const fieldTemplate = optional ? `[${field}]` : field;
   return `  * @param {${type}} ${fieldTemplate} ${description} \n`;
 }
 
-function writeTitle(type, suffix = 'object') {
-  return `  * Creates a ${type} ${suffix}\n  *\n`;
+function writeType(schema) {
+  return `class ${schema.id} {\n}`;
 }
 
-function resolveRefs(ref) {
-  return json.get(schema, ref);
+function getType(schema) {
+  let prefix = '!';
+
+  if (schema.enum && schema.enum.length === 1) {
+    return typeof(schema.enum[0]);
+  };
+
+  if (Array.isArray(schema.type)) {
+    let types = schema.type.join('|');
+    if (types.includes('null')) {
+      prefix = '';
+    }
+  }
+
+  return schema.type;
 }
 
 function upperFirst(str) {

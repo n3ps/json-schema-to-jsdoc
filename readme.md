@@ -20,5 +20,4 @@ jsdoc(schema);
 //   */
 // class Simple {
 // }
-}
 ```

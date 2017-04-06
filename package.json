@@ -4,9 +4,9 @@
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node example.js",
     "test": "mocha",
-    "example": "node sample.js"
+    "jsdoc": "npm start && jsdoc docs.js"
   },
   "keywords": [
     "JSON",
@@ -18,10 +18,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "json-pointer": "^0.6.0",
-    "json-schema-defaults": "^0.3.0"
+    "json-pointer": "^0.6.0"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
+    "jsdoc": "^3.4.3",
     "mocha": "^3.2.0"
   }
 }
