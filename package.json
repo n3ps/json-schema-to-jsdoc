@@ -4,9 +4,9 @@
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
-    "start": "node example.js",
     "test": "mocha",
-    "jsdoc": "npm start && jsdoc docs.js"
+    "example": "node example.js",
+    "postexample": "jsdoc docs.js"
   },
   "keywords": [
     "JSON",
