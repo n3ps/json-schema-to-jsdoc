@@ -3,7 +3,7 @@ const json = require('json-pointer');
 
 module.exports = generate;
 
-function generate(schema, options) {
+function generate(schema, options = {}) {
   let jsdoc = '';
 
   if (!schema || Object.keys(schema).length === 0) {
@@ -63,22 +63,21 @@ function writeType(type) {
 }
 
 function getType(schema) {
-  let prefix = '!';
-
   if (schema.enum && schema.enum.length === 1) {
     return typeof(schema.enum[0]);
   };
 
   if (Array.isArray(schema.type)) {
-    let types = schema.type.join('|');
-    if (types.includes('null')) {
-      prefix = '';
+    if (schema.type.includes('null')) {
+      return `?${schema.type[0]}`;
+    } else {
+      return schema.type.join('|');
     }
   }
 
   return schema.type;
 }
 
-function upperFirst(str) {
+function upperFirst(str = '') {
   return str.substr(0,1).toUpperCase() + str.substr(1);
 }

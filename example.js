@@ -1,17 +1,14 @@
-const json = require('json-pointer');
 const generate = require( './index');
 const fs = require('fs');
 
-const schema = require('./message');
-const list = json.get(schema, '/definitions/messages')
+const schema = {
+  "id": "Person",
+  "type": "object",
+  "properties": {
+    "name": {"type": "string", "description": "A person's name"},
+    "age": {"type": "integer", "description": "A person's age"}
+  },
+  "required" : ["name"]
+}
 
-let docs = '';
-Object.keys(list).forEach(key => {
-  let options = {
-    id: key + 'Message',
-    ignore: ['messageType']
-  };
-  docs += generate(list[key], options);
-});
-
-fs.writeFileSync('docs.js', docs);
+fs.writeFileSync('docs.js', generate(schema));
