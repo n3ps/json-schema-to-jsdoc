@@ -32,15 +32,18 @@ function processProperties(schema, nested, options = {}) {
   for (let property in props) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue;
-    } else if (props[property].type === 'object' && props[property].properties) {
-      text += `  * @property {object} ${property}\n`;
-      text += processProperties(props[property], true);
     } else {
-      let prefix = nested ? '.' : ''; // Match parent to nest
-      let optional = !required.includes(property);
-      let type = getType(props[property]) || upperFirst(property);
-      text += writeParam(type, prefix + property, props[property].description, optional);
-    }
+      let prefix = nested ? '.' : '';
+
+      if (props[property].type === 'object' && props[property].properties) {
+        text += writeParam('object', prefix + property, props[property].description, true);
+        text += processProperties(props[property], true);
+      } else {
+        let optional = !required.includes(property);
+        let type = getType(props[property]) || upperFirst(property);
+        text += writeParam(type, prefix + property, props[property].description, optional);
+      }
+    } 
   }
   return text;
 }
@@ -57,9 +60,14 @@ function writeParam(type = '', field, description = '', optional) {
 }
 
 function getType(schema) {
-  if (schema.enum && schema.enum.length === 1) {
-    return typeof(schema.enum[0]);
-  };
+  if (schema.$ref) {
+    const ref = json.get(root, schema.$ref.substr(1));
+    return getType(ref);
+  }
+
+  if (schema.enum) {
+    return 'enum';
+  } 
 
   if (Array.isArray(schema.type)) {
     if (schema.type.includes('null')) {
