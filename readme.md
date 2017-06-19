@@ -23,11 +23,9 @@ jsdoc(schema);
 ### Output
 ```js
 /** 
-  * Creates a Person object
+  * Represents a Person object
   *
-  * @param {string} name - A person's name
-  * @param {integer} [age] - A person's age
+  * @property {string} name - A person's name
+  * @property {integer} [age] - A person's age
   */
-
-class Person {}
 ```

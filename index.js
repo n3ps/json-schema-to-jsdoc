@@ -21,8 +21,6 @@ function generate(schema, options = {}) {
 
   jsdoc += '  */\n';
 
-  jsdoc += writeType(options.id);
-
   return jsdoc;
 }
 
@@ -35,7 +33,7 @@ function processProperties(schema, nested, options = {}) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue;
     } else if (props[property].type === 'object' && props[property].properties) {
-      text += `  * @param {object} ${property}\n`;
+      text += `  * @property {object} ${property}\n`;
       text += processProperties(props[property], true);
     } else {
       let prefix = nested ? '.' : ''; // Match parent to nest
@@ -48,18 +46,14 @@ function processProperties(schema, nested, options = {}) {
 }
 
 function writeDescription(schema, suffix = 'object') {
-  let text = schema.description || `Creates a ${schema.id} ${suffix}`;
+  let text = schema.description || `Represents a ${schema.id} ${suffix}`;
+  text += `\n  * @name ${upperFirst(schema.id)}`;
   return `  * ${text}\n  *\n`;
 }
 
 function writeParam(type = '', field, description = '', optional) {
   const fieldTemplate = optional ? `[${field}]` : field;
-  return `  * @param {${type}} ${fieldTemplate} - ${description} \n`;
-}
-
-function writeType(type) {
-  let text = `class ${upperFirst(type)} {}\n`;
-  return text;
+  return `  * @property {${type}} ${fieldTemplate} - ${description} \n`;
 }
 
 function getType(schema) {
