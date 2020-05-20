@@ -1,6 +1,6 @@
 {
   "name": "json-schema-to-jsdoc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
@@ -15,8 +15,12 @@
     "jsonschema",
     "generator"
   ],
-  "author": "",
+  "author": "Francis Nepomuceno",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n3ps/json-schema-to-jsdoc.git"
+  },
   "dependencies": {
     "json-pointer": "^0.6.0"
   },
