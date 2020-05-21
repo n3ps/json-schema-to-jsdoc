@@ -1,6 +1,5 @@
 'use strict';
 
-const {assert} = require('chai');
 const generate = require('./index');
 
 it('Guards', function() {
