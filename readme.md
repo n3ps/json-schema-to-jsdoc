@@ -22,7 +22,7 @@ jsdoc(schema);
 
 ### Output
 ```js
-/** 
+/**
   * Represents a Person object
   *
   * @property {string} name - A person's name

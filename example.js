@@ -1,3 +1,4 @@
+'use strict';
 const generate = require( './index');
 const fs = require('fs');
 

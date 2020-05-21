@@ -1,5 +1,7 @@
-var {assert} = require('chai');
-var generate = require('./index');
+'use strict';
+
+const {assert} = require('chai');
+const generate = require('./index');
 
 it('Guards', function() {
   const inputs = [null, {}, undefined];

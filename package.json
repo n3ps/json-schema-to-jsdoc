@@ -16,10 +16,18 @@
     "generator"
   ],
   "author": "Francis Nepomuceno",
+  "contributors": [
+    "Brett Zamir"
+  ],
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/n3ps/json-schema-to-jsdoc.git"
+  },
+  "bugs": "https://github.com/n3ps/json-schema-to-jsdoc/issues",
+  "homepage": "https://github.com/n3ps/json-schema-to-jsdoc",
+  "engines": {
+    "node": ">=6.0.0"
   },
   "dependencies": {
     "json-pointer": "^0.6.0"
