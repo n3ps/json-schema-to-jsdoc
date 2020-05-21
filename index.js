@@ -19,14 +19,14 @@ function generate (schema, options = {}) {
     return jsdoc
   }
 
-  jsdoc += processProperties(schema, false, options)
+  jsdoc += processProperties(schema, schema, false, options)
 
   jsdoc += '  */\n'
 
   return jsdoc
 }
 
-function processProperties (schema, nested, options = {}) {
+function processProperties (schema, rootSchema, nested, options = {}) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
 
@@ -39,10 +39,10 @@ function processProperties (schema, nested, options = {}) {
 
       if (props[property].type === 'object' && props[property].properties) {
         text += writeParam('object', prefix + property, props[property].description, true)
-        text += processProperties(props[property], true)
+        text += processProperties(props[property], rootSchema, true)
       } else {
         const optional = !required.includes(property)
-        const type = getType(props[property]) || upperFirst(property)
+        const type = getType(props[property], rootSchema) || upperFirst(property)
         text += writeParam(type, prefix + property, props[property].description, optional)
       }
     }
@@ -56,15 +56,15 @@ function writeDescription (schema, suffix = 'object') {
   return `  * ${text}\n  *\n`
 }
 
-function writeParam (type = '', field, description = '', optional) {
+function writeParam (type, field, description = '', optional) {
   const fieldTemplate = optional ? `[${field}]` : field
   return `  * @property {${type}} ${fieldTemplate} - ${description} \n`
 }
 
-function getType (schema) {
+function getType (schema, rootSchema) {
   if (schema.$ref) {
-    const ref = json.get(global, schema.$ref.slice(1))
-    return getType(ref)
+    const ref = json.get(rootSchema, schema.$ref.slice(1))
+    return getType(ref, rootSchema)
   }
 
   if (schema.enum) {
