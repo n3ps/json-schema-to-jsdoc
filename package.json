@@ -4,7 +4,10 @@
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha --require chai/register-assert",
+    "lint": "eslint .",
+    "mocha": "mocha --require chai/register-assert",
+    "nyc": "nyc npm run mocha",
+    "test": "npm run lint && npm run nyc",
     "example": "node example.js",
     "postexample": "jsdoc docs.js"
   },
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "eslint": "^7.0.0",
     "jsdoc": "^3.6.4",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1"

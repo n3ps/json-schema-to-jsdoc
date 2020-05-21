@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+// const fs = require('fs');
 const json = require('json-pointer');
 
 module.exports = generate;
@@ -16,7 +16,7 @@ function generate(schema, options = {}) {
   jsdoc += writeDescription(schema);
 
   if (!json.has(schema, '/properties')){
-   return jsdoc;
+    return jsdoc;
   }
 
   jsdoc += processProperties(schema, false, options);
@@ -31,18 +31,18 @@ function processProperties(schema, nested, options = {}) {
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : [];
 
   let text = '';
-  for (let property in props) {
+  for (const property in props) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue;
     } else {
-      let prefix = nested ? '.' : '';
+      const prefix = nested ? '.' : '';
 
       if (props[property].type === 'object' && props[property].properties) {
         text += writeParam('object', prefix + property, props[property].description, true);
         text += processProperties(props[property], true);
       } else {
-        let optional = !required.includes(property);
-        let type = getType(props[property]) || upperFirst(property);
+        const optional = !required.includes(property);
+        const type = getType(props[property]) || upperFirst(property);
         text += writeParam(type, prefix + property, props[property].description, optional);
       }
     }
@@ -63,7 +63,7 @@ function writeParam(type = '', field, description = '', optional) {
 
 function getType(schema) {
   if (schema.$ref) {
-    const ref = json.get(root, schema.$ref.substr(1));
+    const ref = json.get(global, schema.$ref.slice(1));
     return getType(ref);
   }
 
@@ -83,5 +83,5 @@ function getType(schema) {
 }
 
 function upperFirst(str = '') {
-  return str.substr(0,1).toUpperCase() + str.substr(1);
+  return str.slice(0, 1).toUpperCase() + str.slice(1);
 }

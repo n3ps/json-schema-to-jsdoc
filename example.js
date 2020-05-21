@@ -10,6 +10,6 @@ const schema = {
     "age": {"type": "integer", "description": "A person's age"}
   },
   "required" : ["name"]
-}
+};
 
 fs.writeFileSync('docs.js', generate(schema));
