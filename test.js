@@ -12,7 +12,7 @@ it('Guards', function() {
 
 it('Simple object', function() {
   const schema = {"type": "string"};
-  const expected = '/**  * Creates a undefined object  *';
+  const expected = '/**  * Represents a undefined object  * @name   *';
   assert.equal(process(schema), expected);
 });
 
