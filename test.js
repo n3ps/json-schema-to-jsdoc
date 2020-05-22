@@ -1,5 +1,6 @@
-var {assert} = require('chai');
-var generate = require('./index');
+'use strict';
+
+const generate = require('./index');
 
 it('Guards', function() {
   const inputs = [null, {}, undefined];
@@ -10,7 +11,7 @@ it('Guards', function() {
 
 it('Simple object', function() {
   const schema = {"type": "string"};
-  const expected = '/**  * Creates a undefined object  *';
+  const expected = '/**  * Represents a undefined object  * @name   *';
   assert.equal(process(schema), expected);
 });
 

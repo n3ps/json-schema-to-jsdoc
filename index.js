@@ -1,3 +1,5 @@
+'use strict';
+
 const fs = require('fs');
 const json = require('json-pointer');
 
@@ -43,7 +45,7 @@ function processProperties(schema, nested, options = {}) {
         let type = getType(props[property]) || upperFirst(property);
         text += writeParam(type, prefix + property, props[property].description, optional);
       }
-    } 
+    }
   }
   return text;
 }
@@ -67,7 +69,7 @@ function getType(schema) {
 
   if (schema.enum) {
     return 'enum';
-  } 
+  }
 
   if (Array.isArray(schema.type)) {
     if (schema.type.includes('null')) {

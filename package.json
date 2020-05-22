@@ -4,7 +4,7 @@
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "nyc mocha --require chai/register-assert",
     "example": "node example.js",
     "postexample": "jsdoc docs.js"
   },
@@ -16,17 +16,26 @@
     "generator"
   ],
   "author": "Francis Nepomuceno",
+  "contributors": [
+    "Brett Zamir"
+  ],
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/n3ps/json-schema-to-jsdoc.git"
   },
+  "bugs": "https://github.com/n3ps/json-schema-to-jsdoc/issues",
+  "homepage": "https://github.com/n3ps/json-schema-to-jsdoc",
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "dependencies": {
     "json-pointer": "^0.6.0"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "jsdoc": "^3.4.3",
-    "mocha": "^3.2.0"
+    "chai": "^4.2.0",
+    "jsdoc": "^3.6.4",
+    "mocha": "^7.1.2",
+    "nyc": "^15.0.1"
   }
 }
