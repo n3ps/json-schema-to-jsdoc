@@ -1,15 +1,15 @@
-'use strict';
-const generate = require( './index');
-const fs = require('fs');
+'use strict'
+const generate = require('./index')
+const fs = require('fs')
 
 const schema = {
-  "id": "Person",
-  "type": "object",
-  "properties": {
-    "name": {"type": "string", "description": "A person's name"},
-    "age": {"type": "integer", "description": "A person's age"}
+  id: 'Person',
+  type: 'object',
+  properties: {
+    name: { type: 'string', description: "A person's name" },
+    age: { type: 'integer', description: "A person's age" }
   },
-  "required" : ["name"]
-};
+  required: ['name']
+}
 
-fs.writeFileSync('docs.js', generate(schema));
+fs.writeFileSync('docs.js', generate(schema))

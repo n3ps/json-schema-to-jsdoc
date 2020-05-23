@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  extends: ['eslint:recommended'],
+  extends: ['eslint:recommended', 'standard'],
   env: {
     node: true
   },
@@ -18,14 +18,9 @@ module.exports = {
     ecmaVersion: 2015
   },
   rules: {
-    semi: ['error'],
-    indent: ['error', 2, {SwitchCase: 1}],
-    'prefer-const': ['error'],
     'no-var': ['error'],
     'prefer-destructuring': ['error'],
     'object-shorthand': ['error'],
-    'object-curly-spacing': ['error', 'never'],
-    'brace-style': ['error', '1tbs'],
     'prefer-template': ['error']
   }
-};
+}
