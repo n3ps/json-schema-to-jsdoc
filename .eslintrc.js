@@ -3,17 +3,9 @@
 module.exports = {
   extends: ['eslint:recommended', 'standard'],
   env: {
+    jest: true,
     node: true
   },
-  overrides: [{
-    files: 'test.js',
-    globals: {
-      assert: true
-    },
-    env: {
-      mocha: true
-    }
-  }],
   parserOptions: {
     ecmaVersion: 2015
   },

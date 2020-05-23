@@ -5,14 +5,14 @@ const generate = require('./index')
 it('Guards', function () {
   const inputs = [null, {}, undefined]
   inputs.forEach(input => {
-    assert.equal(generate(input), '')
+    expect(generate(input)).toEqual('')
   })
 })
 
 it('Simple string', function () {
   const schema = { type: 'string' }
   const expected = '/**  * Represents a undefined object  * @name   *'
-  assert.equal(process(schema), expected)
+  expect(process(schema)).toEqual(expected)
 })
 
 function process (input) {
