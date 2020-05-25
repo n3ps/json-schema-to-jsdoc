@@ -50,10 +50,13 @@ function processProperties (schema, rootSchema, nested, options = {}) {
   return text
 }
 
-function writeDescription (schema, suffix = 'object') {
-  let text = schema.description || `Represents a ${schema.id} ${suffix}`
-  text += `\n  * @name ${upperFirst(schema.id)}`
-  return `  * ${text}\n  *\n`
+function writeDescription (schema) {
+  return `  * ${
+    schema.description || `Represents a ${schema.id} object`
+}
+  * @name ${upperFirst(schema.id)}
+  *
+`
 }
 
 function writeParam (type, field, description = '', optional) {
