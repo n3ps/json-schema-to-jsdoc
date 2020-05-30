@@ -38,12 +38,12 @@ function processProperties (schema, rootSchema, nested, options = {}) {
       const prefix = nested ? '.' : ''
 
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeParam('object', prefix + property, props[property].description, true)
+        text += writeParam('object', prefix + property, props[property].description, true, options)
         text += processProperties(props[property], rootSchema, true)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeParam(type, prefix + property, props[property].description, optional)
+        text += writeParam(type, prefix + property, props[property].description, optional, options)
       }
     }
   }
@@ -59,9 +59,11 @@ function writeDescription (schema) {
 `
 }
 
-function writeParam (type, field, description = '', optional) {
+function writeParam (type, field, description = '', optional, options) {
   const fieldTemplate = optional ? `[${field}]` : field
-  return `  * @property {${type}} ${fieldTemplate} - ${description}\n`
+  return `  * @property {${type}} ${fieldTemplate}${
+    !description && options.descriptionPlaceholder === false ? '' : ` - ${description}`
+  }\n`
 }
 
 function getType (schema, rootSchema) {
