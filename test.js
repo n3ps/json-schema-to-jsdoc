@@ -107,6 +107,50 @@ it('Object with properties (with false `descriptionPlaceholder`)', function () {
   })).toEqual(expected)
 })
 
+it('Object with properties (with false `hyphenatedDescriptions`)', function () {
+  const schema = {
+    type: 'object',
+    properties: {
+      aStringProp: {
+        type: 'string'
+      },
+      anObjectProp: {
+        type: 'object',
+        properties: {
+          aNestedProp: {
+            description: 'Boolean desc.',
+            type: 'boolean'
+          }
+        }
+      },
+      nullableType: {
+        type: ['string', 'null']
+      },
+      multipleTypes: {
+        type: ['string', 'number']
+      },
+      enumProp: {
+        enum: ['hello', 'world']
+      }
+    }
+  }
+  const expected = `/**
+  * Represents a undefined object
+  * @name${trailingSpace}
+  *
+  * @property {string} [aStringProp]${trailingSpace}
+  * @property {object} [anObjectProp]${trailingSpace}
+  * @property {boolean} [.aNestedProp] Boolean desc.
+  * @property {?string} [nullableType]${trailingSpace}
+  * @property {string|number} [multipleTypes]${trailingSpace}
+  * @property {enum} [enumProp]${trailingSpace}
+  */
+`
+  expect(generate(schema, {
+    hyphenatedDescriptions: false
+  })).toEqual(expected)
+})
+
 it('Schema with `$ref`', function () {
   const schema = {
     $defs: { // New name for `definitions`

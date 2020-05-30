@@ -62,7 +62,11 @@ function writeDescription (schema) {
 function writeParam (type, field, description = '', optional, options) {
   const fieldTemplate = optional ? `[${field}]` : field
   return `  * @property {${type}} ${fieldTemplate}${
-    !description && options.descriptionPlaceholder === false ? '' : ` - ${description}`
+    !description && options.descriptionPlaceholder === false
+      ? ''
+      : options.hyphenatedDescriptions === false
+        ? ` ${description}`
+        : ` - ${description}`
   }\n`
 }
 
