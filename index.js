@@ -13,13 +13,13 @@ function generate (schema, options = {}) {
   }
 
   jsdoc += '/**\n'
-  jsdoc += writeDescription(schema)
+  jsdoc += writeDescription(schema, options)
 
-  if (!json.has(schema, '/properties')) {
-    return jsdoc
+  if (json.has(schema, '/properties')) {
+    jsdoc += `  *
+`
+    jsdoc += processProperties(schema, schema, false, options)
   }
-
-  jsdoc += processProperties(schema, schema, false, options)
 
   jsdoc += '  */\n'
 
@@ -50,24 +50,48 @@ function processProperties (schema, rootSchema, nested, options) {
   return text
 }
 
-function writeDescription (schema) {
-  return `  * ${
-    schema.description || `Represents a ${schema.id} object`
-}
-  * @name ${upperFirst(schema.id)}
-  *
+function writeDescription (schema, options) {
+  const {
+    description = options.autoDescribe === false
+      ? ''
+      : `Represents a${
+        schema.title
+          ? ` ${schema.title}`
+          : 'aeiou'.split('').includes(schema.type.charAt()) ? 'n' : ''
+      } ${schema.type}`
+  } = schema
+
+  const typeMatch = options.types && options.types[schema.type]
+
+  let type
+  if (options.types === false) {
+    type = ''
+  } else {
+    type = ` {${
+      typeMatch === ''
+        ? ''
+        : typeMatch || schema.type
+      }}`
+  }
+  return `  *${description ? ` ${description}` : ''}
+  * @${options.objectTagName || 'typedef'}${type}${schema.title
+    ? ` ${options.capitalizeTitle === false ? schema.title : upperFirst(schema.title)}`
+    : ''
+  }
 `
 }
 
 function writeParam (type, field, description = '', optional, options) {
   const fieldTemplate = optional ? `[${field}]` : field
-  return `  * @property {${type}} ${fieldTemplate}${
-    !description && options.descriptionPlaceholder === false
-      ? ''
-      : options.hyphenatedDescriptions === false
-        ? ` ${description}`
-        : ` - ${description}`
-  }\n`
+  let desc
+  if (!description && options.descriptionPlaceholder === false) {
+    desc = ''
+  } else if (options.hyphenatedDescriptions === false) {
+    desc = ` ${description}`
+  } else {
+    desc = ` - ${description}`
+  }
+  return `  * @property {${type}} ${fieldTemplate}${desc}\n`
 }
 
 function getType (schema, rootSchema) {
@@ -91,6 +115,6 @@ function getType (schema, rootSchema) {
   return schema.type
 }
 
-function upperFirst (str = '') {
+function upperFirst (str) {
   return str.slice(0, 1).toUpperCase() + str.slice(1)
 }
