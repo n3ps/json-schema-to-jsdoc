@@ -98,7 +98,7 @@ describe('Schemas with properties', () => {
  * @typedef {object}
  * @property {string} [aStringProp]
  * @property {object} [anObjectProp]
- * @property {boolean} [.aNestedProp] Boolean desc.
+ * @property {boolean} [anObjectProp.aNestedProp] Boolean desc.
  * @property {?string} [nullableType]
  * @property {string|number} [multipleTypes]
  * @property {enum} [enumProp]
@@ -132,8 +132,8 @@ describe('Schemas with properties', () => {
     const expected = `/**
  * @typedef {object}
  * @property {object} [anObjectProp]
- * @property {boolean} .aNestedProp
- * @property {number} [.anotherNestedProp]
+ * @property {boolean} anObjectProp.aNestedProp
+ * @property {number} [anObjectProp.anotherNestedProp]
  * @property {string} [propWithDefault="hello"]
  */
 `
@@ -159,8 +159,37 @@ describe('Schemas with properties', () => {
     const expected = `/**
  * @typedef {object}
  * @property {object} [anObjectProp]
- * @property {ANestedProp} [.aNestedProp]
- * @property {number} [.anotherNestedProp]
+ * @property {ANestedProp} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Object with deep nesting', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+              type: 'object',
+              properties: {
+                aDeeplyNestedProp: {
+                  type: 'number'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property {object} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.aNestedProp.aDeeplyNestedProp]
  */
 `
     expect(generate(schema)).toEqual(expected)
@@ -306,7 +335,7 @@ describe('option: `indent`', () => {
 ${spaces} * @typedef {object}
 ${spaces} * @property {string} [aStringProp]
 ${spaces} * @property {object} [anObjectProp]
-${spaces} * @property {boolean} [.aNestedProp] Boolean desc.
+${spaces} * @property {boolean} [anObjectProp.aNestedProp] Boolean desc.
 ${spaces} * @property {?string} [nullableType]
 ${spaces} * @property {string|number} [multipleTypes]
 ${spaces} * @property {enum} [enumProp]
@@ -349,7 +378,7 @@ ${spaces} */
 ${tabs} * @typedef {object}
 ${tabs} * @property {string} [aStringProp]
 ${tabs} * @property {object} [anObjectProp]
-${tabs} * @property {boolean} [.aNestedProp] Boolean desc.
+${tabs} * @property {boolean} [anObjectProp.aNestedProp] Boolean desc.
 ${tabs} * @property {?string} [nullableType]
 ${tabs} * @property {string|number} [multipleTypes]
 ${tabs} * @property {enum} [enumProp]
@@ -394,7 +423,7 @@ describe('option: `descriptionPlaceholder`', () => {
  * @typedef {object}
  * @property {string} [aStringProp]${trailingSpace}
  * @property {object} [anObjectProp]${trailingSpace}
- * @property {boolean} [.aNestedProp] Boolean desc.
+ * @property {boolean} [anObjectProp.aNestedProp] Boolean desc.
  * @property {?string} [nullableType]${trailingSpace}
  * @property {string|number} [multipleTypes]${trailingSpace}
  * @property {enum} [enumProp]${trailingSpace}
@@ -438,7 +467,7 @@ describe('option: `hyphenatedDescriptions`', () => {
  * @typedef {object}
  * @property {string} [aStringProp]
  * @property {object} [anObjectProp]
- * @property {boolean} [.aNestedProp] - Boolean desc.
+ * @property {boolean} [anObjectProp.aNestedProp] - Boolean desc.
  * @property {?string} [nullableType]
  * @property {string|number} [multipleTypes]
  * @property {enum} [enumProp]

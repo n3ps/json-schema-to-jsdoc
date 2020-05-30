@@ -16,7 +16,7 @@ function generate (schema, options = {}) {
   jsdoc += writeDescription(schema, options)
 
   if (json.has(schema, '/properties')) {
-    jsdoc += processProperties(schema, schema, false, options)
+    jsdoc += processProperties(schema, schema, null, options)
   }
 
   jsdoc += `${indent(options)} */\n`
@@ -28,7 +28,7 @@ function indent (options) {
   return (options.indentChar || ' ').repeat(options.indent || 0)
 }
 
-function processProperties (schema, rootSchema, nested, options) {
+function processProperties (schema, rootSchema, base, options) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
 
@@ -37,15 +37,16 @@ function processProperties (schema, rootSchema, nested, options) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue
     } else {
-      const prefix = nested ? '.' : ''
+      const root = base ? `${base}.` : ''
+      const prefixedProperty = root + property
       const defaultValue = props[property].default
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeProperty('object', prefix + property, props[property].description, true, defaultValue, options)
-        text += processProperties(props[property], rootSchema, true, options)
+        text += writeProperty('object', prefixedProperty, props[property].description, true, defaultValue, options)
+        text += processProperties(props[property], rootSchema, prefixedProperty, options)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeProperty(type, prefix + property, props[property].description, optional, defaultValue, options)
+        text += writeProperty(type, prefixedProperty, props[property].description, optional, defaultValue, options)
       }
     }
   }
