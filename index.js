@@ -26,7 +26,7 @@ function generate (schema, options = {}) {
   return jsdoc
 }
 
-function processProperties (schema, rootSchema, nested, options = {}) {
+function processProperties (schema, rootSchema, nested, options) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
 
@@ -39,7 +39,7 @@ function processProperties (schema, rootSchema, nested, options = {}) {
 
       if (props[property].type === 'object' && props[property].properties) {
         text += writeParam('object', prefix + property, props[property].description, true, options)
-        text += processProperties(props[property], rootSchema, true)
+        text += processProperties(props[property], rootSchema, true, options)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
