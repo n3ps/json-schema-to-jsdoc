@@ -61,7 +61,7 @@ function writeDescription (schema) {
 
 function writeParam (type, field, description = '', optional) {
   const fieldTemplate = optional ? `[${field}]` : field
-  return `  * @property {${type}} ${fieldTemplate} - ${description} \n`
+  return `  * @property {${type}} ${fieldTemplate} - ${description}\n`
 }
 
 function getType (schema, rootSchema) {

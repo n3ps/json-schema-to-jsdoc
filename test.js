@@ -32,6 +32,7 @@ it('Object with properties', function () {
         type: 'object',
         properties: {
           aNestedProp: {
+            description: 'Boolean desc.',
             type: 'boolean'
           }
         }
@@ -51,12 +52,12 @@ it('Object with properties', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {string} [aStringProp] - ${trailingSpace}
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {boolean} [.aNestedProp] - ${trailingSpace}
-  * @property {?string} [nullableType] - ${trailingSpace}
-  * @property {string|number} [multipleTypes] - ${trailingSpace}
-  * @property {enum} [enumProp] - ${trailingSpace}
+  * @property {string} [aStringProp] -${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {boolean} [.aNestedProp] - Boolean desc.
+  * @property {?string} [nullableType] -${trailingSpace}
+  * @property {string|number} [multipleTypes] -${trailingSpace}
+  * @property {enum} [enumProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -80,7 +81,7 @@ it('Schema with `$ref`', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {number} [aNumberProp] - ${trailingSpace}
+  * @property {number} [aNumberProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -108,9 +109,9 @@ it('Object with properties and `required`', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {boolean} .aNestedProp - ${trailingSpace}
-  * @property {number} [.anotherNestedProp] - ${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {boolean} .aNestedProp -${trailingSpace}
+  * @property {number} [.anotherNestedProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -136,9 +137,9 @@ it('Object with untyped property', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {ANestedProp} [.aNestedProp] - ${trailingSpace}
-  * @property {number} [.anotherNestedProp] - ${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {ANestedProp} [.aNestedProp] -${trailingSpace}
+  * @property {number} [.anotherNestedProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -165,7 +166,7 @@ it('Object with properties and `ignore` option', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {string} [aStringProp] - ${trailingSpace}
+  * @property {string} [aStringProp] -${trailingSpace}
   */
 `
   expect(generate(schema, {
