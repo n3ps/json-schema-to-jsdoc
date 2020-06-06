@@ -26,7 +26,7 @@ function generate (schema, options = {}) {
   return jsdoc
 }
 
-function processProperties (schema, rootSchema, nested, options = {}) {
+function processProperties (schema, rootSchema, nested, options) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
 
@@ -38,12 +38,12 @@ function processProperties (schema, rootSchema, nested, options = {}) {
       const prefix = nested ? '.' : ''
 
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeParam('object', prefix + property, props[property].description, true)
-        text += processProperties(props[property], rootSchema, true)
+        text += writeParam('object', prefix + property, props[property].description, true, options)
+        text += processProperties(props[property], rootSchema, true, options)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeParam(type, prefix + property, props[property].description, optional)
+        text += writeParam(type, prefix + property, props[property].description, optional, options)
       }
     }
   }
@@ -59,9 +59,15 @@ function writeDescription (schema) {
 `
 }
 
-function writeParam (type, field, description = '', optional) {
+function writeParam (type, field, description = '', optional, options) {
   const fieldTemplate = optional ? `[${field}]` : field
-  return `  * @property {${type}} ${fieldTemplate} - ${description} \n`
+  return `  * @property {${type}} ${fieldTemplate}${
+    !description && options.descriptionPlaceholder === false
+      ? ''
+      : options.hyphenatedDescriptions === false
+        ? ` ${description}`
+        : ` - ${description}`
+  }\n`
 }
 
 function getType (schema, rootSchema) {

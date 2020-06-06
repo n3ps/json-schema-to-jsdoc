@@ -32,6 +32,7 @@ it('Object with properties', function () {
         type: 'object',
         properties: {
           aNestedProp: {
+            description: 'Boolean desc.',
             type: 'boolean'
           }
         }
@@ -51,15 +52,103 @@ it('Object with properties', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {string} [aStringProp] - ${trailingSpace}
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {boolean} [.aNestedProp] - ${trailingSpace}
-  * @property {?string} [nullableType] - ${trailingSpace}
-  * @property {string|number} [multipleTypes] - ${trailingSpace}
-  * @property {enum} [enumProp] - ${trailingSpace}
+  * @property {string} [aStringProp] -${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {boolean} [.aNestedProp] - Boolean desc.
+  * @property {?string} [nullableType] -${trailingSpace}
+  * @property {string|number} [multipleTypes] -${trailingSpace}
+  * @property {enum} [enumProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
+})
+
+it('Object with properties (with false `descriptionPlaceholder`)', function () {
+  const schema = {
+    type: 'object',
+    properties: {
+      aStringProp: {
+        type: 'string'
+      },
+      anObjectProp: {
+        type: 'object',
+        properties: {
+          aNestedProp: {
+            description: 'Boolean desc.',
+            type: 'boolean'
+          }
+        }
+      },
+      nullableType: {
+        type: ['string', 'null']
+      },
+      multipleTypes: {
+        type: ['string', 'number']
+      },
+      enumProp: {
+        enum: ['hello', 'world']
+      }
+    }
+  }
+  const expected = `/**
+  * Represents a undefined object
+  * @name${trailingSpace}
+  *
+  * @property {string} [aStringProp]
+  * @property {object} [anObjectProp]
+  * @property {boolean} [.aNestedProp] - Boolean desc.
+  * @property {?string} [nullableType]
+  * @property {string|number} [multipleTypes]
+  * @property {enum} [enumProp]
+  */
+`
+  expect(generate(schema, {
+    descriptionPlaceholder: false
+  })).toEqual(expected)
+})
+
+it('Object with properties (with false `hyphenatedDescriptions`)', function () {
+  const schema = {
+    type: 'object',
+    properties: {
+      aStringProp: {
+        type: 'string'
+      },
+      anObjectProp: {
+        type: 'object',
+        properties: {
+          aNestedProp: {
+            description: 'Boolean desc.',
+            type: 'boolean'
+          }
+        }
+      },
+      nullableType: {
+        type: ['string', 'null']
+      },
+      multipleTypes: {
+        type: ['string', 'number']
+      },
+      enumProp: {
+        enum: ['hello', 'world']
+      }
+    }
+  }
+  const expected = `/**
+  * Represents a undefined object
+  * @name${trailingSpace}
+  *
+  * @property {string} [aStringProp]${trailingSpace}
+  * @property {object} [anObjectProp]${trailingSpace}
+  * @property {boolean} [.aNestedProp] Boolean desc.
+  * @property {?string} [nullableType]${trailingSpace}
+  * @property {string|number} [multipleTypes]${trailingSpace}
+  * @property {enum} [enumProp]${trailingSpace}
+  */
+`
+  expect(generate(schema, {
+    hyphenatedDescriptions: false
+  })).toEqual(expected)
 })
 
 it('Schema with `$ref`', function () {
@@ -80,7 +169,7 @@ it('Schema with `$ref`', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {number} [aNumberProp] - ${trailingSpace}
+  * @property {number} [aNumberProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -108,9 +197,9 @@ it('Object with properties and `required`', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {boolean} .aNestedProp - ${trailingSpace}
-  * @property {number} [.anotherNestedProp] - ${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {boolean} .aNestedProp -${trailingSpace}
+  * @property {number} [.anotherNestedProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -136,9 +225,9 @@ it('Object with untyped property', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {object} [anObjectProp] - ${trailingSpace}
-  * @property {ANestedProp} [.aNestedProp] - ${trailingSpace}
-  * @property {number} [.anotherNestedProp] - ${trailingSpace}
+  * @property {object} [anObjectProp] -${trailingSpace}
+  * @property {ANestedProp} [.aNestedProp] -${trailingSpace}
+  * @property {number} [.anotherNestedProp] -${trailingSpace}
   */
 `
   expect(generate(schema)).toEqual(expected)
@@ -165,7 +254,7 @@ it('Object with properties and `ignore` option', function () {
   * Represents a undefined object
   * @name${trailingSpace}
   *
-  * @property {string} [aStringProp] - ${trailingSpace}
+  * @property {string} [aStringProp] -${trailingSpace}
   */
 `
   expect(generate(schema, {
