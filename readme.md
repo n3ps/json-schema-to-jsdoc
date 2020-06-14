@@ -8,7 +8,7 @@ Useful when you already have a JSON Schema and want to document the types you wa
 const jsdoc = require('json-schema-to-jsdoc');
 
 const schema = {
-  "id": "Person",
+  "title": "Person",
   "type": "object",
   "properties": {
     "name": {"type": "string", "description": "A person's name"},
