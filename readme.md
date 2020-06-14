@@ -25,6 +25,7 @@ jsdoc(schema);
 ```js
 /**
   * Represents a Person object
+  * @typedef {object}
   *
   * @property {string} name - A person's name
   * @property {integer} [age] - A person's age
