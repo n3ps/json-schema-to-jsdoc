@@ -21,6 +21,16 @@ it('Simple string', function () {
   expect(generate(schema)).toEqual(expected)
 })
 
+it('Simple string with description', function () {
+  const schema = { type: 'string', description: 'String description' }
+  const expected = `/**
+  * String description
+  * @typedef {string}
+  */
+`
+  expect(generate(schema)).toEqual(expected)
+})
+
 it('Simple object with `autoDescribe`: false', function () {
   const schema = {
     type: 'object'

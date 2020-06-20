@@ -51,7 +51,12 @@ function processProperties (schema, rootSchema, nested, options) {
 }
 
 function writeDescription (schema, options) {
-  const description = options.autoDescribe === false ? '' : generateDescription(schema.title, schema.type)
+  let { description } = schema
+  if (description === undefined) {
+    description = options.autoDescribe === false ? '' : generateDescription(schema.title, schema.type)
+  } else {
+    description = ` ${description}`
+  }
   const typeMatch = options.types && options.types[schema.type]
 
   let type
