@@ -51,16 +51,7 @@ function processProperties (schema, rootSchema, nested, options) {
 }
 
 function writeDescription (schema, options) {
-  const {
-    description = options.autoDescribe === false
-      ? ''
-      : `Represents a${
-        schema.title
-          ? ` ${schema.title}`
-          : 'aeiou'.split('').includes(schema.type.charAt()) ? 'n' : ''
-      } ${schema.type}`
-  } = schema
-
+  const description = options.autoDescribe === false ? '' : generateDescription(schema.title, schema.type)
   const typeMatch = options.types && options.types[schema.type]
 
   let type
@@ -73,7 +64,7 @@ function writeDescription (schema, options) {
         : typeMatch || schema.type
       }}`
   }
-  return `  *${description ? ` ${description}` : ''}
+  return `  *${description}
   * @${options.objectTagName || 'typedef'}${type}${schema.title
     ? ` ${options.capitalizeTitle === false ? schema.title : upperFirst(schema.title)}`
     : ''
@@ -117,4 +108,11 @@ function getType (schema, rootSchema) {
 
 function upperFirst (str) {
   return str.slice(0, 1).toUpperCase() + str.slice(1)
+}
+
+function generateDescription (title, type) {
+  const noun = title ? `${title} ${type}` : type
+  const article = `a${'aeiou'.split('').includes(noun.charAt()) ? 'n' : ''}`
+
+  return ` Represents ${article} ${noun}`
 }
