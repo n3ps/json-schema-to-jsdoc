@@ -40,14 +40,14 @@ function processProperties (schema, rootSchema, nested, options) {
       continue
     } else {
       const prefix = nested ? '.' : ''
-
+      const deflt = props[property].default
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeProperty('object', prefix + property, props[property].description, true, options)
+        text += writeProperty('object', prefix + property, props[property].description, true, deflt, options)
         text += processProperties(props[property], rootSchema, true, options)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeProperty(type, prefix + property, props[property].description, optional, options)
+        text += writeProperty(type, prefix + property, props[property].description, optional, deflt, options)
       }
     }
   }
@@ -81,8 +81,14 @@ ${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
 `
 }
 
-function writeProperty (type, field, description = '', optional, options) {
-  const fieldTemplate = optional ? `[${field}]` : field
+function writeProperty (type, field, description = '', optional, deflt, options) {
+  let fieldTemplate
+  if (optional) {
+    fieldTemplate = `[${field}${deflt === undefined ? '' : `=${JSON.stringify(deflt)}`}]`
+  } else {
+    fieldTemplate = field
+  }
+
   let desc
   if (!description && options.descriptionPlaceholder === false) {
     desc = ''
