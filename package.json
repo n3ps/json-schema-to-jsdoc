@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "jest",
+    "test": "jest --coverage",
     "example": "node example.js",
     "postexample": "jsdoc docs.js"
   },
