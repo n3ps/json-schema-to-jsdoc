@@ -14,11 +14,99 @@ it('Guards', function () {
 it('Simple string', function () {
   const schema = { type: 'string' }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
-  *
+  * Represents a string
+  * @typedef {string}
+  */
 `
   expect(generate(schema)).toEqual(expected)
+})
+
+it('Simple object with `autoDescribe`: false', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+  *
+  * @typedef {object}
+  */
+`
+  expect(generate(schema, {
+    autoDescribe: false
+  })).toEqual(expected)
+})
+
+it('Simple object with `types`: false', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+  * Represents an object
+  * @typedef
+  */
+`
+  expect(generate(schema, {
+    types: false
+  })).toEqual(expected)
+})
+
+it('Simple object with empty string `types`', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+  * Represents an object
+  * @typedef {}
+  */
+`
+  expect(generate(schema, {
+    types: {
+      object: ''
+    }
+  })).toEqual(expected)
+})
+
+it('Simple object with `types`', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+  * Represents an object
+  * @typedef {PlainObject}
+  */
+`
+  expect(generate(schema, {
+    types: {
+      object: 'PlainObject'
+    }
+  })).toEqual(expected)
+})
+
+it('Simple object with title', function () {
+  const schema = {
+    title: 'special',
+    type: 'object'
+  }
+  const expected = `/**
+  * Represents a special object
+  * @typedef {object} Special
+  */
+`
+  expect(generate(schema)).toEqual(expected)
+})
+
+it('Simple object with title and `capitalizeTitle`: false', function () {
+  const schema = {
+    title: 'special',
+    type: 'object'
+  }
+  const expected = `/**
+  * Represents a special object
+  * @typedef {object} special
+  */
+`
+  expect(generate(schema, {
+    capitalizeTitle: false
+  })).toEqual(expected)
 })
 
 it('Object with properties', function () {
@@ -49,8 +137,8 @@ it('Object with properties', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {string} [aStringProp] -${trailingSpace}
   * @property {object} [anObjectProp] -${trailingSpace}
@@ -91,8 +179,8 @@ it('Object with properties (with false `descriptionPlaceholder`)', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {string} [aStringProp]
   * @property {object} [anObjectProp]
@@ -135,8 +223,8 @@ it('Object with properties (with false `hyphenatedDescriptions`)', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {string} [aStringProp]${trailingSpace}
   * @property {object} [anObjectProp]${trailingSpace}
@@ -166,8 +254,8 @@ it('Schema with `$ref`', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {number} [aNumberProp] -${trailingSpace}
   */
@@ -194,8 +282,8 @@ it('Object with properties and `required`', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {object} [anObjectProp] -${trailingSpace}
   * @property {boolean} .aNestedProp -${trailingSpace}
@@ -222,8 +310,8 @@ it('Object with untyped property', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {object} [anObjectProp] -${trailingSpace}
   * @property {ANestedProp} [.aNestedProp] -${trailingSpace}
@@ -251,8 +339,8 @@ it('Object with properties and `ignore` option', function () {
     }
   }
   const expected = `/**
-  * Represents a undefined object
-  * @name${trailingSpace}
+  * Represents an object
+  * @typedef {object}
   *
   * @property {string} [aStringProp] -${trailingSpace}
   */
