@@ -12,18 +12,22 @@ function generate (schema, options = {}) {
     return jsdoc
   }
 
-  jsdoc += '/**\n'
+  jsdoc += `${indent(options)}/**\n`
   jsdoc += writeDescription(schema, options)
 
   if (json.has(schema, '/properties')) {
-    jsdoc += `  *
+    jsdoc += `${indent(options)} *
 `
     jsdoc += processProperties(schema, schema, false, options)
   }
 
-  jsdoc += '  */\n'
+  jsdoc += `${indent(options)} */\n`
 
   return jsdoc
+}
+
+function indent (options) {
+  return (options.indentChar || ' ').repeat(options.indent || 0)
 }
 
 function processProperties (schema, rootSchema, nested, options) {
@@ -38,12 +42,12 @@ function processProperties (schema, rootSchema, nested, options) {
       const prefix = nested ? '.' : ''
 
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeParam('object', prefix + property, props[property].description, true, options)
+        text += writeProperty('object', prefix + property, props[property].description, true, options)
         text += processProperties(props[property], rootSchema, true, options)
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeParam(type, prefix + property, props[property].description, optional, options)
+        text += writeProperty(type, prefix + property, props[property].description, optional, options)
       }
     }
   }
@@ -69,15 +73,15 @@ function writeDescription (schema, options) {
         : typeMatch || schema.type
       }}`
   }
-  return `  *${description}
-  * @${options.objectTagName || 'typedef'}${type}${schema.title
+  return `${indent(options)} *${description}
+${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
     ? ` ${options.capitalizeTitle === false ? schema.title : upperFirst(schema.title)}`
     : ''
   }
 `
 }
 
-function writeParam (type, field, description = '', optional, options) {
+function writeProperty (type, field, description = '', optional, options) {
   const fieldTemplate = optional ? `[${field}]` : field
   let desc
   if (!description && options.descriptionPlaceholder === false) {
@@ -87,7 +91,7 @@ function writeParam (type, field, description = '', optional, options) {
   } else {
     desc = ` - ${description}`
   }
-  return `  * @property {${type}} ${fieldTemplate}${desc}\n`
+  return `${indent(options)} * @property {${type}} ${fieldTemplate}${desc}\n`
 }
 
 function getType (schema, rootSchema) {
