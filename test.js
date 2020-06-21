@@ -36,12 +36,26 @@ it('Simple object with `autoDescribe`: false', function () {
     type: 'object'
   }
   const expected = `/**
- *
  * @typedef {object}
  */
 `
   expect(generate(schema, {
     autoDescribe: false
+  })).toEqual(expected)
+})
+
+it('Simple object with `addDescriptionLineBreak`: true', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+ *
+ * @typedef {object}
+ */
+`
+  expect(generate(schema, {
+    autoDescribe: false,
+    addDescriptionLineBreak: true
   })).toEqual(expected)
 })
 
@@ -149,7 +163,6 @@ it('Object with properties', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {string} [aStringProp] -${trailingSpace}
  * @property {object} [anObjectProp] -${trailingSpace}
  * @property {boolean} [.aNestedProp] - Boolean desc.
@@ -192,7 +205,6 @@ it('Object with properties with space indent', function () {
   const expected = `${spaces}/**
 ${spaces} * Represents an object
 ${spaces} * @typedef {object}
-${spaces} *
 ${spaces} * @property {string} [aStringProp] -${trailingSpace}
 ${spaces} * @property {object} [anObjectProp] -${trailingSpace}
 ${spaces} * @property {boolean} [.aNestedProp] - Boolean desc.
@@ -237,7 +249,6 @@ it('Object with properties with tab indent', function () {
   const expected = `${tabs}/**
 ${tabs} * Represents an object
 ${tabs} * @typedef {object}
-${tabs} *
 ${tabs} * @property {string} [aStringProp] -${trailingSpace}
 ${tabs} * @property {object} [anObjectProp] -${trailingSpace}
 ${tabs} * @property {boolean} [.aNestedProp] - Boolean desc.
@@ -282,7 +293,6 @@ it('Object with properties (with false `descriptionPlaceholder`)', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {string} [aStringProp]
  * @property {object} [anObjectProp]
  * @property {boolean} [.aNestedProp] - Boolean desc.
@@ -326,7 +336,6 @@ it('Object with properties (with false `hyphenatedDescriptions`)', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {string} [aStringProp]${trailingSpace}
  * @property {object} [anObjectProp]${trailingSpace}
  * @property {boolean} [.aNestedProp] Boolean desc.
@@ -357,7 +366,6 @@ it('Schema with `$ref`', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {number} [aNumberProp] -${trailingSpace}
  */
 `
@@ -389,7 +397,6 @@ it('Object with properties and `required`', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {object} [anObjectProp] -${trailingSpace}
  * @property {boolean} .aNestedProp -${trailingSpace}
  * @property {number} [.anotherNestedProp] -${trailingSpace}
@@ -418,7 +425,6 @@ it('Object with untyped property', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {object} [anObjectProp] -${trailingSpace}
  * @property {ANestedProp} [.aNestedProp] -${trailingSpace}
  * @property {number} [.anotherNestedProp] -${trailingSpace}
@@ -447,7 +453,6 @@ it('Object with properties and `ignore` option', function () {
   const expected = `/**
  * Represents an object
  * @typedef {object}
- *
  * @property {string} [aStringProp] -${trailingSpace}
  */
 `
