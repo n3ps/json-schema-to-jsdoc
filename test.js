@@ -45,6 +45,40 @@ it('Simple object with `autoDescribe`: false', function () {
   })).toEqual(expected)
 })
 
+it('Simple object with `emptyDescriptionLineBreak`: false', function () {
+  const schema = {
+    type: 'object'
+  }
+  const expected = `/**
+ * @typedef {object}
+ */
+`
+  expect(generate(schema, {
+    autoDescribe: false,
+    emptyDescriptionLineBreak: false
+  })).toEqual(expected)
+})
+
+it('Simple object with `propertiesLineBreak`: false', function () {
+  const schema = {
+    type: 'object',
+    properties: {
+      aStringProp: {
+        type: 'string'
+      }
+    }
+  }
+  const expected = `/**
+ * Represents an object
+ * @typedef {object}
+ * @property {string} [aStringProp] -${trailingSpace}
+ */
+`
+  expect(generate(schema, {
+    propertiesLineBreak: false
+  })).toEqual(expected)
+})
+
 it('Simple object with `types`: false', function () {
   const schema = {
     type: 'object'

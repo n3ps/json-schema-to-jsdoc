@@ -16,8 +16,10 @@ function generate (schema, options = {}) {
   jsdoc += writeDescription(schema, options)
 
   if (json.has(schema, '/properties')) {
-    jsdoc += `${indent(options)} *
+    if (options.propertiesLineBreak !== false) {
+      jsdoc += `${indent(options)} *
 `
+    }
     jsdoc += processProperties(schema, schema, false, options)
   }
 
@@ -73,8 +75,12 @@ function writeDescription (schema, options) {
         : typeMatch || schema.type
       }}`
   }
-  return `${indent(options)} *${description}
-${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
+  let descriptionLine = ''
+  if (description || options.emptyDescriptionLineBreak !== false) {
+    descriptionLine = `${indent(options)} *${description}
+`
+  }
+  return `${descriptionLine}${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
     ? ` ${options.capitalizeTitle === false ? schema.title : upperFirst(schema.title)}`
     : ''
   }
