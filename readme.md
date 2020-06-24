@@ -33,34 +33,34 @@ jsdoc(schema /* , optionsObject */);
 
 ### Options
 
-- `autoDescribe` - Boolean on whether to add a description
+- `autoDescribe: boolean` - Whether to add a description
     (`"Represents a/n [<title> ]<type>"`) when the schema has no
     `description`. Defaults to `true`.
-- `capitalizeTitle` - If `false` and a schema `title` is present, will prevent
-    capitalizing the schema's `title` in the output of
+- `capitalizeTitle: boolean` - If `false` and a schema `title` is present,
+    will prevent capitalizing the schema's `title` in the output of
     `@typedef [{type}] title`. Defaults to `true.`
-- `descriptionPlaceholder` - If `false` and there is no `description` for the
-    object `@property`, this will avoid a hyphen or even a space for
+- `descriptionPlaceholder: boolean` - If `false` and there is no `description`
+    for the object `@property`, this will avoid a hyphen or even a space for
     `{description}` within `@property {name}{description}`. Defaults to `true`.
-- `emptyDescriptionLineBreak` - Boolean on whether to include an extra
+- `emptyDescriptionLineBreak: boolean` - Whether to include an extra
     placeholder line when `autoDescribe` is `false` and the schema
     `description` is empty. Defaults to `true`.
-- `hyphenatedDescriptions` - If `false`, will avoid adding an initial hyphen +
-    space in the `{description}` portion of `@property {name}{description}`
-    (will add a space, however, unless `descriptionPlaceholder` is `false`).
-    Defaults to `true`.
-- `ignore` - Array of string property names to ignore adding to output.
-    Defaults to empty array.
-- `indent` - Number of `indentChar` to precede each line. Defaults to `0` (no
-    indent). Note that a single space will be added in addition to the indent
-    for every line of the document block after the first.
-- `indentChar` - Character to use when `indent` is set (e.g., a tab or space).
-    Defaults to a space.
-- `objectTagName` - Tag name to use for objects. Defaults to `typedef`.
-- `propertiesLineBreak` - Whether to add a line break before `@property`
-    listings. Defaults to `true`.
-- `types` - Boolean or an object map of schema types to strings to be used to
-    determine output of curly-bracketed type content within `@typedef {...}`.
+- `hyphenatedDescriptions: boolean` - If `false`, will avoid adding an initial
+    hyphen + space in the `{description}` portion of
+    `@property {name}{description}` (will add a space, however, unless
+    `descriptionPlaceholder` is `false`). Defaults to `true`.
+- `ignore: string[]` - Property names to ignore adding to output. Defaults to
+    empty array.
+- `indent: number` - How many of `indentChar` to precede each line. Defaults
+    to `0` (no indent). Note that a single space will be added in addition to
+    the indent for every line of the document block after the first.
+- `indentChar: string` - Character to use when `indent` is set (e.g., a tab or
+    space). Defaults to a space.
+- `objectTagName: string` - Tag name to use for objects. Defaults to `typedef`.
+- `propertiesLineBreak: boolean` - Whether to add a line break before
+    `@property` listings. Defaults to `true`.
+- `types: boolean|{[schemaType: string]: string}` - Used to determine output of
+    curly-bracketed type content within `@typedef {...}`.
     If `types` is `false`, no curly brackets or type content will be shown
     with the `@typedef` at all. If the schema `type` matches a property in the
     object map, and it maps to the empty string, an empty `{}` will result.
