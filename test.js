@@ -379,6 +379,10 @@ it('Object with properties and `required`', function () {
             type: 'number'
           }
         }
+      },
+      propWithDefault: {
+        type: 'string',
+        default: 'hello'
       }
     }
   }
@@ -389,6 +393,7 @@ it('Object with properties and `required`', function () {
  * @property {object} [anObjectProp] -${trailingSpace}
  * @property {boolean} .aNestedProp -${trailingSpace}
  * @property {number} [.anotherNestedProp] -${trailingSpace}
+ * @property {string} [propWithDefault="hello"] -${trailingSpace}
  */
 `
   expect(generate(schema)).toEqual(expected)
