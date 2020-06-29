@@ -24,10 +24,64 @@ jsdoc(schema /* , optionsObject */);
 
 ```js
 /**
-  * Represents a Person object
+  * @typedef {object}
+  * @property {string} name A person's name
+  * @property {integer} [age] A person's age
+  */
+```
+
+### Examples
+
+
+### `hyphenatedDescriptions`
+
+```js
+jsdoc(schema, {
+    hyphenatedDescriptions: true
+});
+```
+
+```js
+/**
   * @typedef {object}
   * @property {string} name - A person's name
   * @property {integer} [age] - A person's age
+  */
+```
+
+### `autoDescribe`
+
+```js
+jsdoc(schema, {
+    autoDescribe: true
+});
+```
+
+```js
+/**
+  * Represents a Person object
+  * @typedef {object}
+  * @property {string} name A person's name
+  * @property {integer} [age] A person's age
+  */
+```
+
+### `types`
+
+```js
+jsdoc(schema, {
+    types: {
+      object: 'PlainObject'
+    }
+});
+```
+
+```js
+/**
+  * Represents a Person object
+  * @typedef {PlainObject}
+  * @property {string} name A person's name
+  * @property {integer} [age] A person's age
   */
 ```
 
@@ -35,20 +89,20 @@ jsdoc(schema /* , optionsObject */);
 
 - `autoDescribe: boolean` - Whether to add a description
     (`"Represents a/n [<title> ]<type>"`) when the schema has no
-    `description`. Defaults to `true`.
+    `description`. Defaults to `false`.
 - `capitalizeTitle: boolean` - If `false` and a schema `title` is present,
     will prevent capitalizing the schema's `title` in the output of
-    `@typedef [{type}] title`. Defaults to `true.`
+    `@typedef [{type}] title`. Defaults to `false.`
 - `descriptionPlaceholder: boolean` - If `false` and there is no `description`
     for the object `@property`, this will avoid a hyphen or even a space for
-    `{description}` within `@property {name}{description}`. Defaults to `true`.
+    `{description}` within `@property {name}{description}`. Defaults to `false`.
 - `addDescriptionLineBreak: boolean` - Whether to include an extra
     placeholder line when `autoDescribe` is `false` and the schema
     `description` is empty. Defaults to `false`.
 - `hyphenatedDescriptions: boolean` - If `false`, will avoid adding an initial
     hyphen + space in the `{description}` portion of
     `@property {name}{description}` (will add a space, however, unless
-    `descriptionPlaceholder` is `false`). Defaults to `true`.
+    `descriptionPlaceholder` is `false`). Defaults to `false`.
 - `ignore: string[]` - Property names to ignore adding to output. Defaults to
     empty array.
 - `indent: number` - How many of `indentChar` to precede each line. Defaults
