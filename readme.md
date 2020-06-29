@@ -42,9 +42,9 @@ jsdoc(schema /* , optionsObject */);
 - `descriptionPlaceholder: boolean` - If `false` and there is no `description`
     for the object `@property`, this will avoid a hyphen or even a space for
     `{description}` within `@property {name}{description}`. Defaults to `true`.
-- `emptyDescriptionLineBreak: boolean` - Whether to include an extra
+- `addDescriptionLineBreak: boolean` - Whether to include an extra
     placeholder line when `autoDescribe` is `false` and the schema
-    `description` is empty. Defaults to `true`.
+    `description` is empty. Defaults to `false`.
 - `hyphenatedDescriptions: boolean` - If `false`, will avoid adding an initial
     hyphen + space in the `{description}` portion of
     `@property {name}{description}` (will add a space, however, unless
@@ -57,8 +57,6 @@ jsdoc(schema /* , optionsObject */);
 - `indentChar: string` - Character to use when `indent` is set (e.g., a tab or
     space). Defaults to a space.
 - `objectTagName: string` - Tag name to use for objects. Defaults to `typedef`.
-- `propertiesLineBreak: boolean` - Whether to add a line break before
-    `@property` listings. Defaults to `true`.
 - `types: boolean|{[schemaType: string]: string}` - Used to determine output of
     curly-bracketed type content within `@typedef {...}`.
     If `types` is `false`, no curly brackets or type content will be shown
