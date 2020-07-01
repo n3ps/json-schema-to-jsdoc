@@ -87,20 +87,17 @@ jsdoc(schema, {
 
 ### Options
 
-- `autoDescribe: boolean` - Whether to add a description
+- `autoDescribe: boolean` - Adds a description
     (`"Represents a/n [<title> ]<type>"`) when the schema has no
     `description`. Defaults to `false`.
-- `capitalizeTitle: boolean` - If `false` and a schema `title` is present,
-    will prevent capitalizing the schema's `title` in the output of
+- `capitalizeTitle: boolean` - If a schema `title` is present, capitalizes the schema's `title` in the output of
     `@typedef [{type}] title`. Defaults to `false.`
 - `descriptionPlaceholder: boolean` - If `false` and there is no `description`
     for the object `@property`, this will avoid a hyphen or even a space for
     `{description}` within `@property {name}{description}`. Defaults to `false`.
-- `addDescriptionLineBreak: boolean` - Whether to include an extra
-    placeholder line when `autoDescribe` is `false` and the schema
+- `addDescriptionLineBreak: boolean` - Inserts an empty line when `autoDescribe` is `false` and the schema
     `description` is empty. Defaults to `false`.
-- `hyphenatedDescriptions: boolean` - If `false`, will avoid adding an initial
-    hyphen + space in the `{description}` portion of
+- `hyphenatedDescriptions: boolean` - Inserts a hyphen + space in the `{description}` portion of
     `@property {name}{description}` (will add a space, however, unless
     `descriptionPlaceholder` is `false`). Defaults to `false`.
 - `ignore: string[]` - Property names to ignore adding to output. Defaults to
