@@ -55,7 +55,7 @@ function processProperties (schema, rootSchema, nested, options) {
 function writeDescription (schema, options) {
   let { description } = schema
   if (description === undefined) {
-    description = options.autoDescribe === false ? '' : generateDescription(schema.title, schema.type)
+    description = options.autoDescribe ? generateDescription(schema.title, schema.type) : ''
   } else {
     description = ` ${description}`
   }
@@ -77,7 +77,7 @@ function writeDescription (schema, options) {
 `
   }
   return `${descriptionLine}${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
-    ? ` ${options.capitalizeTitle === false ? schema.title : upperFirst(schema.title)}`
+    ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}`
     : ''
   }
 `
@@ -92,12 +92,12 @@ function writeProperty (type, field, description = '', optional, defaultValue, o
   }
 
   let desc
-  if (!description && options.descriptionPlaceholder === false) {
+  if (!description && !options.descriptionPlaceholder) {
     desc = ''
-  } else if (options.hyphenatedDescriptions === false) {
-    desc = ` ${description}`
-  } else {
+  } else if (options.hyphenatedDescriptions) {
     desc = ` - ${description}`
+  } else {
+    desc = ` ${description}`
   }
   return `${indent(options)} * @property {${type}} ${fieldTemplate}${desc}\n`
 }

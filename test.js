@@ -14,7 +14,6 @@ it('Guards', function () {
 it('Simple string', function () {
   const schema = { type: 'string' }
   const expected = `/**
- * Represents a string
  * @typedef {string}
  */
 `
@@ -31,17 +30,35 @@ it('Simple string with description', function () {
   expect(generate(schema)).toEqual(expected)
 })
 
-it('Simple object with `autoDescribe`: false', function () {
-  const schema = {
-    type: 'object'
-  }
-  const expected = `/**
+describe('`autoDescribe`', function () {
+  it('Simple object with `autoDescribe`: true', function () {
+    const schema = {
+      type: 'object'
+    }
+    const expected = `/**
+ * Represents an object
  * @typedef {object}
  */
 `
-  expect(generate(schema, {
-    autoDescribe: false
-  })).toEqual(expected)
+    expect(generate(schema, {
+      autoDescribe: true
+    })).toEqual(expected)
+  })
+
+  it('Object with `title` and `autoDescribe`: true', function () {
+    const schema = {
+      type: 'object',
+      title: 'Title'
+    }
+    const expected = `/**
+ * Represents a Title object
+ * @typedef {object} Title
+ */
+`
+    expect(generate(schema, {
+      autoDescribe: true
+    })).toEqual(expected)
+  })
 })
 
 it('Simple object with `addDescriptionLineBreak`: true', function () {
@@ -54,7 +71,6 @@ it('Simple object with `addDescriptionLineBreak`: true', function () {
  */
 `
   expect(generate(schema, {
-    autoDescribe: false,
     addDescriptionLineBreak: true
   })).toEqual(expected)
 })
@@ -64,7 +80,6 @@ it('Simple object with `types`: false', function () {
     type: 'object'
   }
   const expected = `/**
- * Represents an object
  * @typedef
  */
 `
@@ -78,7 +93,6 @@ it('Simple object with empty string `types`', function () {
     type: 'object'
   }
   const expected = `/**
- * Represents an object
  * @typedef {}
  */
 `
@@ -94,7 +108,6 @@ it('Simple object with `types`', function () {
     type: 'object'
   }
   const expected = `/**
- * Represents an object
  * @typedef {PlainObject}
  */
 `
@@ -111,25 +124,23 @@ it('Simple object with title', function () {
     type: 'object'
   }
   const expected = `/**
- * Represents a special object
- * @typedef {object} Special
+ * @typedef {object} special
  */
 `
   expect(generate(schema)).toEqual(expected)
 })
 
-it('Simple object with title and `capitalizeTitle`: false', function () {
+it('Simple object with title and `capitalizeTitle`: true', function () {
   const schema = {
     title: 'special',
     type: 'object'
   }
   const expected = `/**
- * Represents a special object
- * @typedef {object} special
+ * @typedef {object} Special
  */
 `
   expect(generate(schema, {
-    capitalizeTitle: false
+    capitalizeTitle: true
   })).toEqual(expected)
 })
 
@@ -161,14 +172,13 @@ it('Object with properties', function () {
     }
   }
   const expected = `/**
- * Represents an object
  * @typedef {object}
- * @property {string} [aStringProp] -${trailingSpace}
- * @property {object} [anObjectProp] -${trailingSpace}
- * @property {boolean} [.aNestedProp] - Boolean desc.
- * @property {?string} [nullableType] -${trailingSpace}
- * @property {string|number} [multipleTypes] -${trailingSpace}
- * @property {enum} [enumProp] -${trailingSpace}
+ * @property {string} [aStringProp]
+ * @property {object} [anObjectProp]
+ * @property {boolean} [.aNestedProp] Boolean desc.
+ * @property {?string} [nullableType]
+ * @property {string|number} [multipleTypes]
+ * @property {enum} [enumProp]
  */
 `
   expect(generate(schema)).toEqual(expected)
@@ -203,14 +213,13 @@ it('Object with properties with space indent', function () {
   }
   const spaces = '   '
   const expected = `${spaces}/**
-${spaces} * Represents an object
 ${spaces} * @typedef {object}
-${spaces} * @property {string} [aStringProp] -${trailingSpace}
-${spaces} * @property {object} [anObjectProp] -${trailingSpace}
-${spaces} * @property {boolean} [.aNestedProp] - Boolean desc.
-${spaces} * @property {?string} [nullableType] -${trailingSpace}
-${spaces} * @property {string|number} [multipleTypes] -${trailingSpace}
-${spaces} * @property {enum} [enumProp] -${trailingSpace}
+${spaces} * @property {string} [aStringProp]
+${spaces} * @property {object} [anObjectProp]
+${spaces} * @property {boolean} [.aNestedProp] Boolean desc.
+${spaces} * @property {?string} [nullableType]
+${spaces} * @property {string|number} [multipleTypes]
+${spaces} * @property {enum} [enumProp]
 ${spaces} */
 `
   expect(generate(schema, {
@@ -247,14 +256,13 @@ it('Object with properties with tab indent', function () {
   }
   const tabs = '\t\t\t'
   const expected = `${tabs}/**
-${tabs} * Represents an object
 ${tabs} * @typedef {object}
-${tabs} * @property {string} [aStringProp] -${trailingSpace}
-${tabs} * @property {object} [anObjectProp] -${trailingSpace}
-${tabs} * @property {boolean} [.aNestedProp] - Boolean desc.
-${tabs} * @property {?string} [nullableType] -${trailingSpace}
-${tabs} * @property {string|number} [multipleTypes] -${trailingSpace}
-${tabs} * @property {enum} [enumProp] -${trailingSpace}
+${tabs} * @property {string} [aStringProp]
+${tabs} * @property {object} [anObjectProp]
+${tabs} * @property {boolean} [.aNestedProp] Boolean desc.
+${tabs} * @property {?string} [nullableType]
+${tabs} * @property {string|number} [multipleTypes]
+${tabs} * @property {enum} [enumProp]
 ${tabs} */
 `
   expect(generate(schema, {
@@ -263,7 +271,7 @@ ${tabs} */
   })).toEqual(expected)
 })
 
-it('Object with properties (with false `descriptionPlaceholder`)', function () {
+it('Object with properties (with true `descriptionPlaceholder`)', function () {
   const schema = {
     type: 'object',
     properties: {
@@ -291,50 +299,6 @@ it('Object with properties (with false `descriptionPlaceholder`)', function () {
     }
   }
   const expected = `/**
- * Represents an object
- * @typedef {object}
- * @property {string} [aStringProp]
- * @property {object} [anObjectProp]
- * @property {boolean} [.aNestedProp] - Boolean desc.
- * @property {?string} [nullableType]
- * @property {string|number} [multipleTypes]
- * @property {enum} [enumProp]
- */
-`
-  expect(generate(schema, {
-    descriptionPlaceholder: false
-  })).toEqual(expected)
-})
-
-it('Object with properties (with false `hyphenatedDescriptions`)', function () {
-  const schema = {
-    type: 'object',
-    properties: {
-      aStringProp: {
-        type: 'string'
-      },
-      anObjectProp: {
-        type: 'object',
-        properties: {
-          aNestedProp: {
-            description: 'Boolean desc.',
-            type: 'boolean'
-          }
-        }
-      },
-      nullableType: {
-        type: ['string', 'null']
-      },
-      multipleTypes: {
-        type: ['string', 'number']
-      },
-      enumProp: {
-        enum: ['hello', 'world']
-      }
-    }
-  }
-  const expected = `/**
- * Represents an object
  * @typedef {object}
  * @property {string} [aStringProp]${trailingSpace}
  * @property {object} [anObjectProp]${trailingSpace}
@@ -345,7 +309,49 @@ it('Object with properties (with false `hyphenatedDescriptions`)', function () {
  */
 `
   expect(generate(schema, {
-    hyphenatedDescriptions: false
+    descriptionPlaceholder: true
+  })).toEqual(expected)
+})
+
+it('Object with properties (with true `hyphenatedDescriptions`)', function () {
+  const schema = {
+    type: 'object',
+    properties: {
+      aStringProp: {
+        type: 'string'
+      },
+      anObjectProp: {
+        type: 'object',
+        properties: {
+          aNestedProp: {
+            description: 'Boolean desc.',
+            type: 'boolean'
+          }
+        }
+      },
+      nullableType: {
+        type: ['string', 'null']
+      },
+      multipleTypes: {
+        type: ['string', 'number']
+      },
+      enumProp: {
+        enum: ['hello', 'world']
+      }
+    }
+  }
+  const expected = `/**
+ * @typedef {object}
+ * @property {string} [aStringProp]
+ * @property {object} [anObjectProp]
+ * @property {boolean} [.aNestedProp] - Boolean desc.
+ * @property {?string} [nullableType]
+ * @property {string|number} [multipleTypes]
+ * @property {enum} [enumProp]
+ */
+`
+  expect(generate(schema, {
+    hyphenatedDescriptions: true
   })).toEqual(expected)
 })
 
@@ -364,9 +370,8 @@ it('Schema with `$ref`', function () {
     }
   }
   const expected = `/**
- * Represents an object
  * @typedef {object}
- * @property {number} [aNumberProp] -${trailingSpace}
+ * @property {number} [aNumberProp]
  */
 `
   expect(generate(schema)).toEqual(expected)
@@ -395,12 +400,11 @@ it('Object with properties and `required`', function () {
     }
   }
   const expected = `/**
- * Represents an object
  * @typedef {object}
- * @property {object} [anObjectProp] -${trailingSpace}
- * @property {boolean} .aNestedProp -${trailingSpace}
- * @property {number} [.anotherNestedProp] -${trailingSpace}
- * @property {string} [propWithDefault="hello"] -${trailingSpace}
+ * @property {object} [anObjectProp]
+ * @property {boolean} .aNestedProp
+ * @property {number} [.anotherNestedProp]
+ * @property {string} [propWithDefault="hello"]
  */
 `
   expect(generate(schema)).toEqual(expected)
@@ -423,11 +427,10 @@ it('Object with untyped property', function () {
     }
   }
   const expected = `/**
- * Represents an object
  * @typedef {object}
- * @property {object} [anObjectProp] -${trailingSpace}
- * @property {ANestedProp} [.aNestedProp] -${trailingSpace}
- * @property {number} [.anotherNestedProp] -${trailingSpace}
+ * @property {object} [anObjectProp]
+ * @property {ANestedProp} [.aNestedProp]
+ * @property {number} [.anotherNestedProp]
  */
 `
   expect(generate(schema)).toEqual(expected)
@@ -451,9 +454,8 @@ it('Object with properties and `ignore` option', function () {
     }
   }
   const expected = `/**
- * Represents an object
  * @typedef {object}
- * @property {string} [aStringProp] -${trailingSpace}
+ * @property {string} [aStringProp]
  */
 `
   expect(generate(schema, {
