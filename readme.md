@@ -1,8 +1,6 @@
 [![Build Status](https://travis-ci.org/n3ps/json-schema-to-jsdoc.svg?branch=master)](https://travis-ci.org/n3ps/json-schema-to-jsdoc)
 
 [![npm version](https://img.shields.io/npm/v/json-schema-to-jsdoc.svg)](https://www.npmjs.com/package/json-schema-to-jsdoc)
-[![Dependencies](https://img.shields.io/david/n3ps/json-schema-to-jsdoc.svg)](https://david-dm.org/n3ps/json-schema-to-jsdoc)
-[![devDependencies](https://img.shields.io/david/dev/n3ps/json-schema-to-jsdoc.svg)](https://david-dm.org/n3ps/json-schema-to-jsdoc?type=dev)
 
 [![Known Vulnerabilities](https://snyk.io/test/github/n3ps/json-schema-to-jsdoc/badge.svg)](https://snyk.io/test/github/n3ps/json-schema-to-jsdoc)
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/n3ps/json-schema-to-jsdoc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/n3ps/json-schema-to-jsdoc/alerts)
