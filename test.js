@@ -44,7 +44,6 @@ describe('Simple schemas', () => {
   })
 })
 
-
 describe('Schemas with properties', () => {
   it('Schema with `$ref`', function () {
     const schema = {
@@ -257,7 +256,6 @@ describe('option: `types`', () => {
     })).toEqual(expected)
   })
 })
-
 
 describe('option: `capitalizeTitle`', () => {
   it('Simple object with title and `capitalizeTitle`: true', function () {
@@ -480,4 +478,3 @@ describe('option: `ignore`', () => {
     })).toEqual(expected)
   })
 })
-
