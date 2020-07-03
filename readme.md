@@ -1,3 +1,11 @@
+[![Build Status](https://travis-ci.org/n3ps/json-schema-to-jsdoc.svg?branch=master)](https://travis-ci.org/n3ps/json-schema-to-jsdoc)
+
+[![npm version](https://img.shields.io/npm/v/json-schema-to-jsdoc.svg)](https://www.npmjs.com/package/json-schema-to-jsdoc)
+
+[![Known Vulnerabilities](https://snyk.io/test/github/n3ps/json-schema-to-jsdoc/badge.svg)](https://snyk.io/test/github/n3ps/json-schema-to-jsdoc)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/n3ps/json-schema-to-jsdoc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/n3ps/json-schema-to-jsdoc/alerts)
+[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/n3ps/json-schema-to-jsdoc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/n3ps/json-schema-to-jsdoc/context:javascript)
+
 # JSON Schema to JSDoc
 
 Useful when you already have a JSON Schema and want to document the types you want to validate. Works with subschema definitions.
