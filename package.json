@@ -4,10 +4,15 @@
   "description": "JSON Schema to JSDoc generator",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint --report-unused-disable-directives .",
     "test": "jest --coverage",
     "example": "node example.js",
     "postexample": "jsdoc docs.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "eslint --report-unused-disable-directives --fix ."
+    }
   },
   "keywords": [
     "JSON",
@@ -40,6 +45,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "husky": "^4.2.5",
     "jest": "^26.1.0",
     "jsdoc": "^3.6.4"
   }
