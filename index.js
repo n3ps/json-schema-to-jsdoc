@@ -1,27 +1,23 @@
 'use strict'
 
-// const fs = require('fs');
 const json = require('json-pointer')
 
 module.exports = generate
 
 function generate (schema, options = {}) {
-  let jsdoc = ''
+  const jsdoc = []
 
   if (!schema || Object.keys(schema).length === 0) {
-    return jsdoc
+    return ''
   }
 
-  jsdoc += `${indent(options)}/**\n`
-  jsdoc += writeDescription(schema, options)
+  jsdoc.push(...writeDescription(schema, options))
 
   if (json.has(schema, '/properties')) {
-    jsdoc += processProperties(schema, schema, null, options)
+    jsdoc.push(...processProperties(schema, schema, null, options))
   }
 
-  jsdoc += `${indent(options)} */\n`
-
-  return jsdoc
+  return format(jsdoc, options)
 }
 
 function indent (options) {
@@ -31,8 +27,8 @@ function indent (options) {
 function processProperties (schema, rootSchema, base, options) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
+  const result = []
 
-  let text = ''
   for (const property in props) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue
@@ -41,24 +37,25 @@ function processProperties (schema, rootSchema, base, options) {
       const prefixedProperty = root + property
       const defaultValue = props[property].default
       if (props[property].type === 'object' && props[property].properties) {
-        text += writeProperty('object', prefixedProperty, props[property].description, true, defaultValue, options)
-        text += processProperties(props[property], rootSchema, prefixedProperty, options)
+        result.push(writeProperty('object', prefixedProperty, props[property].description, true, defaultValue, options))
+        result.push(...processProperties(props[property], rootSchema, prefixedProperty, options))
       } else {
         const optional = !required.includes(property)
         const type = getType(props[property], rootSchema) || upperFirst(property)
-        text += writeProperty(type, prefixedProperty, props[property].description, optional, defaultValue, options)
+        result.push(writeProperty(type, prefixedProperty, props[property].description, optional, defaultValue, options))
       }
     }
   }
-  return text
+  return result
 }
 
 function writeDescription (schema, options) {
+  const result = []
   let { description } = schema
   if (description === undefined) {
     description = options.autoDescribe ? generateDescription(schema.title, schema.type) : ''
   } else {
-    description = ` ${description}`
+    description = `${description}`
   }
   const typeMatch = options.types && options.types[schema.type]
 
@@ -72,16 +69,15 @@ function writeDescription (schema, options) {
         : typeMatch || schema.type
       }}`
   }
-  let descriptionLine = ''
+
   if (description || options.addDescriptionLineBreak) {
-    descriptionLine = `${indent(options)} *${description}
-`
+    result.push(`${description}`)
   }
-  return `${descriptionLine}${indent(options)} * @${options.objectTagName || 'typedef'}${type}${schema.title
-    ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}`
-    : ''
-  }
-`
+
+  const typeDescription = schema.title ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
+  result.push(`@${options.objectTagName || 'typedef'}${type}${typeDescription}`)
+
+  return result
 }
 
 function writeProperty (type, field, description = '', optional, defaultValue, options) {
@@ -100,7 +96,7 @@ function writeProperty (type, field, description = '', optional, defaultValue, o
   } else {
     desc = ` ${description}`
   }
-  return `${indent(options)} * @property {${type}} ${fieldTemplate}${desc}\n`
+  return `@property {${type}} ${fieldTemplate}${desc}`
 }
 
 function getType (schema, rootSchema) {
@@ -132,5 +128,15 @@ function generateDescription (title, type) {
   const noun = title ? `${title} ${type}` : type
   const article = `a${'aeiou'.split('').includes(noun.charAt()) ? 'n' : ''}`
 
-  return ` Represents ${article} ${noun}`
+  return `Represents ${article} ${noun}`
+}
+
+function format (lines = [], options) {
+  const prefix = indent(options)
+  const result = [`${prefix}/**`]
+
+  result.push(...lines.map(line => line ? `${prefix} * ${line}` : ' *'))
+  result.push(`${prefix} */\n`)
+
+  return result.join('\n')
 }
