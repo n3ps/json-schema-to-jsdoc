@@ -42,10 +42,22 @@ describe('Simple schemas', () => {
 `
     expect(generate(schema)).toEqual(expected)
   })
+
+  it('Simple array with title', function () {
+    const schema = {
+      title: 'special',
+      type: 'array'
+    }
+    const expected = `/**
+ * @typedef {array} special
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
 })
 
 describe('Schemas with properties', () => {
-  it('Schema with `$ref`', function () {
+  it('Schema with `$ref` (object)', function () {
     const schema = {
       $defs: { // New name for `definitions`
         definitionType: {
@@ -80,6 +92,15 @@ describe('Schemas with properties', () => {
             aNestedProp: {
               description: 'Boolean desc.',
               type: 'boolean'
+            },
+            aNestedArrayProp: {
+              description: 'Array desc.',
+              type: 'array',
+              items: [
+                {
+                  type: 'number'
+                }
+              ]
             }
           }
         },
@@ -99,6 +120,8 @@ describe('Schemas with properties', () => {
  * @property {string} [aStringProp]
  * @property {object} [anObjectProp]
  * @property {boolean} [anObjectProp.aNestedProp] Boolean desc.
+ * @property {array} [anObjectProp.aNestedArrayProp] Array desc.
+ * @property {number} anObjectProp.aNestedArrayProp.0
  * @property {?string} [nullableType]
  * @property {string|number} [multipleTypes]
  * @property {enum} [enumProp]
@@ -161,6 +184,142 @@ describe('Schemas with properties', () => {
  * @property {object} [anObjectProp]
  * @property {ANestedProp} [anObjectProp.aNestedProp]
  * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Object with deep nesting', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+              type: 'object',
+              properties: {
+                aDeeplyNestedProp: {
+                  type: 'number'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property {object} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.aNestedProp.aDeeplyNestedProp]
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+})
+
+describe('Schemas with items', function () {
+  it('Schema with `$ref` (array with items array)', function () {
+    const schema = {
+      $defs: { // New name for `definitions`
+        definitionType: {
+          type: 'number'
+        }
+      },
+      type: 'array',
+      items: [{
+        $ref: '#/$defs/definitionType'
+      }]
+    }
+    const expected = `/**
+ * @typedef {array}
+ * @property {number} 0
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Schema with `$ref` (array with items object)', function () {
+    const schema = {
+      $defs: { // New name for `definitions`
+        definitionType: {
+          type: 'number'
+        }
+      },
+      type: 'array',
+      items: {
+        $ref: '#/$defs/definitionType'
+      }
+    }
+    const expected = `/**
+ * @typedef {array}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Array with items', function () {
+    const schema = {
+      type: 'array',
+      items: [
+        {
+          type: 'string'
+        },
+        {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+              description: 'Boolean desc.',
+              type: 'boolean'
+            }
+          }
+        },
+        {
+          type: ['string', 'null']
+        },
+        {
+          type: ['string', 'number']
+        },
+        {
+          enum: ['hello', 'world']
+        }
+      ]
+    }
+    const expected = `/**
+ * @typedef {array}
+ * @property {string} 0
+ * @property {object} 1
+ * @property {boolean} [1.aNestedProp] Boolean desc.
+ * @property {?string} 2
+ * @property {string|number} 3
+ * @property {enum} 4
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Array with untyped property', function () {
+    const schema = {
+      type: 'array',
+      items: [
+        {
+          type: 'array',
+          items: [
+            {
+            },
+            {
+              type: 'number'
+            }
+          ]
+        }
+      ]
+    }
+    const expected = `/**
+ * @typedef {array}
+ * @property {array} 0
+ * @property {*} 0.0
+ * @property {number} 0.1
  */
 `
     expect(generate(schema)).toEqual(expected)
