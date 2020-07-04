@@ -16,12 +16,39 @@ function generate (schema, options = {}) {
   if (json.has(schema, '/properties')) {
     jsdoc.push(...processProperties(schema, schema, null, options))
   }
+  if (json.has(schema, '/items')) {
+    jsdoc.push(...processItems(schema, schema, null, options))
+  }
 
   return format(jsdoc, options)
 }
 
 function indent (options) {
   return (options.indentChar || ' ').repeat(options.indent || 0)
+}
+
+function processItems (schema, rootSchema, base, options) {
+  const items = json.get(schema, '/items')
+  if (!Array.isArray(items)) {
+    return []
+  }
+  const result = []
+  items.forEach((item, i) => {
+    const root = base ? `${base}.` : ''
+    const prefixedProperty = root + i
+    const defaultValue = item.default
+    if (item.type === 'array' && item.items) {
+      result.push(writeProperty('array', prefixedProperty, item.description, false, defaultValue, options))
+      result.push(...processItems(item, rootSchema, prefixedProperty, options))
+    } else if (item.type === 'object' && item.properties) {
+      result.push(writeProperty('object', prefixedProperty, item.description, false, defaultValue, options))
+      result.push(...processProperties(item, rootSchema, prefixedProperty, options))
+    } else {
+      const type = getType(item, rootSchema) || '*'
+      result.push(writeProperty(type, prefixedProperty, item.description, false, defaultValue, options))
+    }
+  })
+  return result
 }
 
 function processProperties (schema, rootSchema, base, options) {
@@ -33,16 +60,20 @@ function processProperties (schema, rootSchema, base, options) {
     if (Array.isArray(options.ignore) && options.ignore.includes(property)) {
       continue
     } else {
+      const prop = props[property]
       const root = base ? `${base}.` : ''
       const prefixedProperty = root + property
       const defaultValue = props[property].default
-      if (props[property].type === 'object' && props[property].properties) {
-        result.push(writeProperty('object', prefixedProperty, props[property].description, true, defaultValue, options))
-        result.push(...processProperties(props[property], rootSchema, prefixedProperty, options))
+      if (prop.type === 'object' && prop.properties) {
+        result.push(writeProperty('object', prefixedProperty, prop.description, true, defaultValue, options))
+        result.push(...processProperties(prop, rootSchema, prefixedProperty, options))
+      } else if (prop.type === 'array' && prop.items) {
+        result.push(writeProperty('array', prefixedProperty, prop.description, true, defaultValue, options))
+        result.push(...processItems(prop, rootSchema, prefixedProperty, options))
       } else {
         const optional = !required.includes(property)
-        const type = getType(props[property], rootSchema) || upperFirst(property)
-        result.push(writeProperty(type, prefixedProperty, props[property].description, optional, defaultValue, options))
+        const type = getType(prop, rootSchema) || upperFirst(property)
+        result.push(writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, options))
       }
     }
   }
@@ -131,7 +162,7 @@ function generateDescription (title, type) {
   return `Represents ${article} ${noun}`
 }
 
-function format (lines = [], options) {
+function format (lines, options) {
   const prefix = indent(options)
   const result = [`${prefix}/**`]
 
