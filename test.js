@@ -785,3 +785,63 @@ describe('option `defaultPropertyType`', function () {
     })).toEqual(expected)
   })
 })
+
+describe('option: `maxLength`', () => {
+  it('Simple object with description and `maxLength`', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        aShortStringProp: {
+          description: 'A short description',
+          type: 'string'
+        },
+        aStringProp: {
+          description: 'This is a very, very, very, very, very, very, very, very, very, very, very long description on the property.',
+          type: 'string'
+        },
+        aNonBreakingStringProp: {
+          description: 'https://example.com/a/very/very/very/very/very/very/very/very/long/nonbreaking/string',
+          type: 'string'
+        },
+        aLongStringBreakingAtEnd: {
+          description: 'https://example.com/another/very/very/very/very/very/very/very/lng/string breaking at end',
+          type: 'string'
+        }
+      },
+      description: 'This is a very, very, very, very, very, very, very, very, very, very, very long description.'
+    }
+    const indent = '    '
+    const expected = `${indent}/**
+${indent} * This is a very, very, very, very, very, very, very, very, very, very,
+${indent} * very long description.
+${indent} * @typedef {object}
+${indent} * @property {string} [aShortStringProp] A short description
+${indent} * @property {string} [aStringProp] This is a very, very, very, very, very,
+${indent} * very, very, very, very, very, very long description on the property.
+${indent} * @property {string} [aNonBreakingStringProp]
+${indent} * https://example.com/a/very/very/very/very/very/very/very/very/long/nonbreaking/string
+${indent} * @property {string} [aLongStringBreakingAtEnd]
+${indent} * https://example.com/another/very/very/very/very/very/very/very/lng/string
+${indent} * breaking at end
+${indent} */
+`
+    expect(generate(schema, {
+      indent: 4,
+      maxLength: 80
+    })).toEqual(expected)
+
+    const expectedNowrapping = `${indent}/**
+${indent} * This is a very, very, very, very, very, very, very, very, very, very, very long description.
+${indent} * @typedef {object}
+${indent} * @property {string} [aShortStringProp] A short description
+${indent} * @property {string} [aStringProp] This is a very, very, very, very, very, very, very, very, very, very, very long description on the property.
+${indent} * @property {string} [aNonBreakingStringProp] https://example.com/a/very/very/very/very/very/very/very/very/long/nonbreaking/string
+${indent} * @property {string} [aLongStringBreakingAtEnd] https://example.com/another/very/very/very/very/very/very/very/lng/string breaking at end
+${indent} */
+`
+
+    expect(generate(schema, {
+      indent: 4
+    })).toEqual(expectedNowrapping)
+  })
+})
