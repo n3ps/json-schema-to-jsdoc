@@ -149,7 +149,7 @@ function writeDescription (schema, config) {
     type = ` {${
       typeMatch === ''
         ? ''
-        : typeMatch || schema.type
+        : typeMatch || getType(schema, schema)
       }}`
   }
 
@@ -190,6 +190,9 @@ function getType (schema, rootSchema) {
   }
 
   if (schema.enum) {
+    if (schema.type === 'string') {
+      return `"${schema.enum.join('"|"')}"`
+    }
     return 'enum'
   }
 
