@@ -182,7 +182,7 @@ describe('Schemas with properties', () => {
     const expected = `/**
  * @typedef {object}
  * @property {object} [anObjectProp]
- * @property {ANestedProp} [anObjectProp.aNestedProp]
+ * @property {*} [anObjectProp.aNestedProp]
  * @property {number} [anObjectProp.anotherNestedProp]
  */
 `
@@ -445,6 +445,67 @@ describe('option: `types`', () => {
   })
 })
 
+describe('option: `propertyNameAsType`', function () {
+  it('Object with untyped property', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+            },
+            anotherNestedProp: {
+              type: 'number'
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property {aNestedProp} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema, {
+      propertyNameAsType: true
+    })).toEqual(expected)
+  })
+})
+
+describe('option: `capitalizeProperty`', function () {
+  it('Object with untyped property', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+            },
+            anotherNestedProp: {
+              type: 'number'
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property {ANestedProp} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema, {
+      propertyNameAsType: true,
+      capitalizeProperty: true
+    })).toEqual(expected)
+  })
+})
+
 describe('option: `capitalizeTitle`', () => {
   it('Simple object with title and `capitalizeTitle`: true', function () {
     const schema = {
@@ -663,6 +724,64 @@ describe('option: `ignore`', () => {
 `
     expect(generate(schema, {
       ignore: ['anObjectProp']
+    })).toEqual(expected)
+  })
+})
+
+describe('option `defaultPropertyType`', function () {
+  it('Object with untyped property and "JSON" `defaultPropertyType`', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+            },
+            anotherNestedProp: {
+              type: 'number'
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property {JSON} [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema, {
+      defaultPropertyType: 'JSON'
+    })).toEqual(expected)
+  })
+
+  it('Object with untyped property and `false` `defaultPropertyType`', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anObjectProp: {
+          type: 'object',
+          properties: {
+            aNestedProp: {
+            },
+            anotherNestedProp: {
+              type: 'number'
+            }
+          }
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {object} [anObjectProp]
+ * @property [anObjectProp.aNestedProp]
+ * @property {number} [anObjectProp.anotherNestedProp]
+ */
+`
+    expect(generate(schema, {
+      defaultPropertyType: false
     })).toEqual(expected)
   })
 })
