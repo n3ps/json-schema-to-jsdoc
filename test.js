@@ -403,7 +403,7 @@ describe('option: `autoDescriptionLineBreak`', () => {
 })
 
 describe('option: `types`', () => {
-  it('Simple object with `types`: false', function () {
+  it('Simple object with `types`: null', function () {
     const schema = {
       type: 'object'
     }
@@ -412,7 +412,7 @@ describe('option: `types`', () => {
  */
 `
     expect(generate(schema, {
-      types: false
+      types: null
     })).toEqual(expected)
   })
   it('Simple object with empty string `types`', function () {
@@ -781,7 +781,7 @@ describe('option `defaultPropertyType`', function () {
  */
 `
     expect(generate(schema, {
-      defaultPropertyType: false
+      defaultPropertyType: null
     })).toEqual(expected)
   })
 })

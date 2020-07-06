@@ -2,15 +2,17 @@
 
 const json = require('json-pointer')
 
-const defaultPropertyType = '*'
-function getDefaultPropertyType (options, property) {
-  if (property !== undefined && options.propertyNameAsType) {
-    return options.capitalizeProperty ? upperFirst(property) : property
+const fallbackPropertyType = '*'
+function getDefaultPropertyType ({
+  propertyNameAsType, capitalizeProperty, defaultPropertyType
+}, property) {
+  if (property !== undefined && propertyNameAsType) {
+    return capitalizeProperty ? upperFirst(property) : property
   }
-  if (options.defaultPropertyType === false) {
-    return null
+  if (defaultPropertyType === null || defaultPropertyType === '') {
+    return defaultPropertyType
   }
-  return options.defaultPropertyType || defaultPropertyType
+  return defaultPropertyType || fallbackPropertyType
 }
 
 module.exports = generate
@@ -100,7 +102,7 @@ function writeDescription (schema, options) {
   const typeMatch = options.types && options.types[schema.type]
 
   let type
-  if (options.types === false) {
+  if (options.types === null) {
     type = ''
   } else {
     type = ` {${
