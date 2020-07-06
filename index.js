@@ -15,32 +15,28 @@ function getDefaultPropertyType ({
   return defaultPropertyType || fallbackPropertyType
 }
 
-function wrapDescription (options, outerIndent, description) {
+function wrapDescription (options, description) {
   const { maxLength } = options
   if (!maxLength) {
     return [description]
   }
   const result = []
 
-  const asteriskAndWhitespaceLength = 3 // ' * '
-  const indentMaxDelta = maxLength - outerIndent.length -
-    asteriskAndWhitespaceLength
-
   while (true) {
-    const excess = description.length - indentMaxDelta
+    const excess = description.length - options.indentMaxDelta
     if (excess <= 0) {
       if (description) {
         result.push(description)
       }
       break
     }
-    const maxLine = description.slice(0, indentMaxDelta)
+    const maxLine = description.slice(0, options.indentMaxDelta)
     const wsIndex = maxLine.search(/\s\S*$/)
     let safeString
     if (wsIndex === -1) {
       // With this being all non-whitespace, e.g., a long link, we
       //  let it go on without wrapping until whitespace is reached
-      const remainder = description.slice(indentMaxDelta).match(/^\S+/)
+      const remainder = description.slice(options.indentMaxDelta).match(/^\S+/)
       safeString = maxLine + (remainder || '')
     } else {
       safeString = maxLine.slice(0, wsIndex)
@@ -61,13 +57,18 @@ function generate (schema, options = {}) {
   }
 
   const outerIndent = indent(options)
-  jsdoc.push(...writeDescription(schema, outerIndent, options))
+  const asteriskAndWhitespaceLength = 3 // ' * '
+
+  options.indentMaxDelta = options.maxLength - outerIndent.length -
+    asteriskAndWhitespaceLength
+
+  jsdoc.push(...writeDescription(schema, options))
 
   if (json.has(schema, '/properties')) {
-    jsdoc.push(...processProperties(schema, schema, null, outerIndent, options))
+    jsdoc.push(...processProperties(schema, schema, null, options))
   }
   if (json.has(schema, '/items')) {
-    jsdoc.push(...processItems(schema, schema, null, outerIndent, options))
+    jsdoc.push(...processItems(schema, schema, null, options))
   }
 
   return format(outerIndent, jsdoc)
@@ -77,7 +78,7 @@ function indent (options) {
   return (options.indentChar || ' ').repeat(options.indent || 0)
 }
 
-function processItems (schema, rootSchema, base, outerIndent, options) {
+function processItems (schema, rootSchema, base, options) {
   const items = json.get(schema, '/items')
   if (!Array.isArray(items)) {
     return []
@@ -88,20 +89,20 @@ function processItems (schema, rootSchema, base, outerIndent, options) {
     const prefixedProperty = root + i
     const defaultValue = item.default
     if (item.type === 'array' && item.items) {
-      result.push(...writeProperty('array', prefixedProperty, outerIndent, item.description, false, defaultValue, options))
-      result.push(...processItems(item, rootSchema, prefixedProperty, outerIndent, options))
+      result.push(...writeProperty('array', prefixedProperty, item.description, false, defaultValue, options))
+      result.push(...processItems(item, rootSchema, prefixedProperty, options))
     } else if (item.type === 'object' && item.properties) {
-      result.push(...writeProperty('object', prefixedProperty, outerIndent, item.description, false, defaultValue, options))
-      result.push(...processProperties(item, rootSchema, prefixedProperty, outerIndent, options))
+      result.push(...writeProperty('object', prefixedProperty, item.description, false, defaultValue, options))
+      result.push(...processProperties(item, rootSchema, prefixedProperty, options))
     } else {
       const type = getType(item, rootSchema) || getDefaultPropertyType(options)
-      result.push(...writeProperty(type, prefixedProperty, outerIndent, item.description, false, defaultValue, options))
+      result.push(...writeProperty(type, prefixedProperty, item.description, false, defaultValue, options))
     }
   })
   return result
 }
 
-function processProperties (schema, rootSchema, base, outerIndent, options) {
+function processProperties (schema, rootSchema, base, options) {
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
   const result = []
@@ -115,22 +116,22 @@ function processProperties (schema, rootSchema, base, outerIndent, options) {
       const prefixedProperty = root + property
       const defaultValue = props[property].default
       if (prop.type === 'object' && prop.properties) {
-        result.push(...writeProperty('object', prefixedProperty, outerIndent, prop.description, true, defaultValue, options))
-        result.push(...processProperties(prop, rootSchema, prefixedProperty, outerIndent, options))
+        result.push(...writeProperty('object', prefixedProperty, prop.description, true, defaultValue, options))
+        result.push(...processProperties(prop, rootSchema, prefixedProperty, options))
       } else if (prop.type === 'array' && prop.items) {
-        result.push(...writeProperty('array', prefixedProperty, outerIndent, prop.description, true, defaultValue, options))
-        result.push(...processItems(prop, rootSchema, prefixedProperty, outerIndent, options))
+        result.push(...writeProperty('array', prefixedProperty, prop.description, true, defaultValue, options))
+        result.push(...processItems(prop, rootSchema, prefixedProperty, options))
       } else {
         const optional = !required.includes(property)
         const type = getType(prop, rootSchema) || getDefaultPropertyType(options, property)
-        result.push(...writeProperty(type, prefixedProperty, outerIndent, prop.description, optional, defaultValue, options))
+        result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, options))
       }
     }
   }
   return result
 }
 
-function writeDescription (schema, outerIndent, options) {
+function writeDescription (schema, options) {
   const result = []
   const { objectTagName = 'typedef' } = options
   let { description } = schema
@@ -151,7 +152,7 @@ function writeDescription (schema, outerIndent, options) {
   }
 
   if (description || options.addDescriptionLineBreak) {
-    result.push(...wrapDescription(options, outerIndent, description))
+    result.push(...wrapDescription(options, description))
   }
 
   const namepath = schema.title ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
@@ -160,7 +161,7 @@ function writeDescription (schema, outerIndent, options) {
   return result
 }
 
-function writeProperty (type, field, outerIndent, description = '', optional, defaultValue, options) {
+function writeProperty (type, field, description = '', optional, defaultValue, options) {
   let fieldTemplate
   if (optional) {
     fieldTemplate = `[${field}${defaultValue === undefined ? '' : `=${JSON.stringify(defaultValue)}`}]`
@@ -177,7 +178,7 @@ function writeProperty (type, field, outerIndent, description = '', optional, de
     desc = ` ${description}`
   }
   const typeExpression = type === null ? '' : `{${type}} `
-  return wrapDescription(options, outerIndent, `@property ${typeExpression}${fieldTemplate}${desc}`)
+  return wrapDescription(options, `@property ${typeExpression}${fieldTemplate}${desc}`)
 }
 
 function getType (schema, rootSchema) {
