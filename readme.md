@@ -97,16 +97,30 @@ jsdoc(schema, {
 - `autoDescribe: boolean` - Adds a description
     (`"Represents a/n [<title> ]<type>"`) when the schema has no
     `description`. Defaults to `false`.
-- `capitalizeTitle: boolean` - If a schema `title` is present, capitalizes the schema's `title` in the output of
-    `@typedef [{type}] title`. Defaults to `false.`
+- `capitalizeTitle: boolean` - If a schema `title` is present, capitalizes the
+    schema's `title` in the output of `@typedef {myType} title`. Defaults to
+    `false`.
+- `capitalizeProperty: boolean` - When `propertyNameAsType` is `true`,
+    capitalizes the property-as-type, i.e., `MyTitle` in
+    `@property {MyTitle} myTitle`. Defaults to `false.`
+- `defaultPropertyType: string|null` - Used when no schema type is present.
+    If set to a string, that string will be used (e.g., "any", "JSON",
+    "external:JSON"). Note that jsdoc recommends `*` for any, while TypeScript
+    uses "any". If one defines one's own "JSON" type, one could use that to
+    clarify that only JSON types are used. If `defaultPropertyType` is set to
+    `null`, will avoid any type brackets or type being added. Defaults to
+    `*`.
 - `descriptionPlaceholder: boolean` - If `false` and there is no `description`
     for the object `@property`, this will avoid a hyphen or even a space for
-    `{description}` within `@property {name}{description}`. Defaults to `false`.
-- `addDescriptionLineBreak: boolean` - Inserts an empty line when `autoDescribe` is `false` and the schema
-    `description` is empty. Defaults to `false`.
-- `hyphenatedDescriptions: boolean` - Inserts a hyphen + space in the `{description}` portion of
-    `@property {name}{description}` (will add a space, however, unless
-    `descriptionPlaceholder` is `false`). Defaults to `false`.
+    `{description}` within `@property {name}{description}`. Defaults to
+    `false`.
+- `addDescriptionLineBreak: boolean` - Inserts an empty line when
+    `autoDescribe` is `false` and the schema `description` is empty. Defaults
+    to `false`.
+- `hyphenatedDescriptions: boolean` - Inserts a hyphen + space in the
+    `{description}` portion of `@property {name}{description}` (will add a
+    space, however, unless `descriptionPlaceholder` is `false`). Defaults to
+    `false`.
 - `ignore: string[]` - Property names to ignore adding to output. Defaults to
     empty array.
 - `indent: number` - How many of `indentChar` to precede each line. Defaults
@@ -115,9 +129,12 @@ jsdoc(schema, {
 - `indentChar: string` - Character to use when `indent` is set (e.g., a tab or
     space). Defaults to a space.
 - `objectTagName: string` - Tag name to use for objects. Defaults to `typedef`.
-- `types: boolean|{[schemaType: string]: string}` - Used to determine output of
+- `propertyNameAsType: boolean` -  Indicates that the property name (for
+    objects) should be used as the type name (optionally capitalized with
+    `capitalizeProperty`). Defaults to `false`.
+- `types: null|{[schemaType: string]: string}` - Used to determine output of
     curly-bracketed type content within `@typedef {...}`.
-    If `types` is `false`, no curly brackets or type content will be shown
+    If `types` is `null`, no curly brackets or type content will be shown
     with the `@typedef` at all. If the schema `type` matches a property in the
     object map, and it maps to the empty string, an empty `{}` will result.
     Otherwise, if there is a `type` match, that string will be used as the

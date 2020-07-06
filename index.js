@@ -2,6 +2,19 @@
 
 const json = require('json-pointer')
 
+const fallbackPropertyType = '*'
+function getDefaultPropertyType ({
+  propertyNameAsType, capitalizeProperty, defaultPropertyType
+}, property) {
+  if (property !== undefined && propertyNameAsType) {
+    return capitalizeProperty ? upperFirst(property) : property
+  }
+  if (defaultPropertyType === null || defaultPropertyType === '') {
+    return defaultPropertyType
+  }
+  return defaultPropertyType || fallbackPropertyType
+}
+
 module.exports = generate
 
 function generate (schema, options = {}) {
@@ -44,7 +57,7 @@ function processItems (schema, rootSchema, base, options) {
       result.push(writeProperty('object', prefixedProperty, item.description, false, defaultValue, options))
       result.push(...processProperties(item, rootSchema, prefixedProperty, options))
     } else {
-      const type = getType(item, rootSchema) || '*'
+      const type = getType(item, rootSchema) || getDefaultPropertyType(options)
       result.push(writeProperty(type, prefixedProperty, item.description, false, defaultValue, options))
     }
   })
@@ -72,7 +85,7 @@ function processProperties (schema, rootSchema, base, options) {
         result.push(...processItems(prop, rootSchema, prefixedProperty, options))
       } else {
         const optional = !required.includes(property)
-        const type = getType(prop, rootSchema) || upperFirst(property)
+        const type = getType(prop, rootSchema) || getDefaultPropertyType(options, property)
         result.push(writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, options))
       }
     }
@@ -85,13 +98,11 @@ function writeDescription (schema, options) {
   let { description } = schema
   if (description === undefined) {
     description = options.autoDescribe ? generateDescription(schema.title, schema.type) : ''
-  } else {
-    description = `${description}`
   }
   const typeMatch = options.types && options.types[schema.type]
 
   let type
-  if (options.types === false) {
+  if (options.types === null) {
     type = ''
   } else {
     type = ` {${
@@ -102,11 +113,11 @@ function writeDescription (schema, options) {
   }
 
   if (description || options.addDescriptionLineBreak) {
-    result.push(`${description}`)
+    result.push(description)
   }
 
-  const typeDescription = schema.title ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
-  result.push(`@${options.objectTagName || 'typedef'}${type}${typeDescription}`)
+  const namepath = schema.title ? ` ${options.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
+  result.push(`@${options.objectTagName || 'typedef'}${type}${namepath}`)
 
   return result
 }
@@ -127,7 +138,8 @@ function writeProperty (type, field, description = '', optional, defaultValue, o
   } else {
     desc = ` ${description}`
   }
-  return `@property {${type}} ${fieldTemplate}${desc}`
+  const typeExpression = type === null ? '' : `{${type}} `
+  return `@property ${typeExpression}${fieldTemplate}${desc}`
 }
 
 function getType (schema, rootSchema) {
