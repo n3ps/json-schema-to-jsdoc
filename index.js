@@ -2,10 +2,11 @@
 
 const json = require('json-pointer')
 
-const fallbackPropertyType = '*'
 function getDefaultPropertyType ({
   propertyNameAsType, capitalizeProperty, defaultPropertyType
 }, property) {
+  const fallbackPropertyType = '*'
+
   if (property !== undefined && propertyNameAsType) {
     return capitalizeProperty ? upperFirst(property) : property
   }
@@ -56,13 +57,7 @@ function generate (schema, options = {}) {
     return ''
   }
 
-  const config = JSON.parse(JSON.stringify(options))
-
-  const outerIndent = indent(config)
-  const asteriskAndWhitespaceLength = 3 // ' * '
-
-  config.indentMaxDelta = config.maxLength - outerIndent.length -
-    asteriskAndWhitespaceLength
+  const config = parseOptions(options)
 
   jsdoc.push(...writeDescription(schema, config))
 
@@ -73,11 +68,20 @@ function generate (schema, options = {}) {
     jsdoc.push(...processItems(schema, schema, null, config))
   }
 
-  return format(outerIndent, jsdoc)
+  return format(config.outerIndent, jsdoc)
 }
 
-function indent (config) {
-  return (config.indentChar || ' ').repeat(config.indent || 0)
+function parseOptions (options = {}) {
+  const asteriskAndWhitespaceLength = 3 // ' * '
+  const outerIndent = (options.indentChar || ' ').repeat(options.indent || 0)
+  const indentMaxDelta = options.maxLength - outerIndent.length -
+    asteriskAndWhitespaceLength
+
+  return {
+    ...options,
+    outerIndent,
+    indentMaxDelta
+  }
 }
 
 function processItems (schema, rootSchema, base, config) {
