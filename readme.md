@@ -103,7 +103,7 @@ jsdoc(schema, {
 - `capitalizeProperty: boolean` - When `propertyNameAsType` is `true`,
     capitalizes the property-as-type, i.e., `MyTitle` in
     `@property {MyTitle} myTitle`. Defaults to `false.`
-- `defaultPropertyType: string|null` - Used when no schema type is present.
+- `defaultPropertyType: null|string` - Used when no schema type is present.
     If set to a string, that string will be used (e.g., "any", "JSON",
     "external:JSON"). Note that jsdoc recommends `*` for any, while TypeScript
     uses "any". If one defines one's own "JSON" type, one could use that to
@@ -128,6 +128,9 @@ jsdoc(schema, {
     the indent for every line of the document block after the first.
 - `indentChar: string` - Character to use when `indent` is set (e.g., a tab or
     space). Defaults to a space.
+- `maxLength: number|boolean` - Enforce a maximum length in `@typedef` and
+    `@property` descriptions (taking into account `indent`/`indentChar`).
+    Set to `false` to prevent wrapping entirely. Defaults to `false`.
 - `objectTagName: string` - Tag name to use for objects. Defaults to `typedef`.
 - `propertyNameAsType: boolean` -  Indicates that the property name (for
     objects) should be used as the type name (optionally capitalized with
