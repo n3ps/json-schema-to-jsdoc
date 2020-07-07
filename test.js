@@ -43,6 +43,18 @@ describe('Simple schemas', () => {
     expect(generate(schema)).toEqual(expected)
   })
 
+  it('String with enum', function () {
+    const schema = {
+      type: 'string',
+      enum: ['some', 'different', 'types']
+    }
+    const expected = `/**
+ * @typedef {"some"|"different"|"types"}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
   it('Simple array with title', function () {
     const schema = {
       title: 'special',
@@ -112,6 +124,10 @@ describe('Schemas with properties', () => {
         },
         enumProp: {
           enum: ['hello', 'world']
+        },
+        enumStringProp: {
+          type: 'string',
+          enum: ['hello', 'there', 'world']
         }
       }
     }
@@ -125,6 +141,7 @@ describe('Schemas with properties', () => {
  * @property {?string} [nullableType]
  * @property {string|number} [multipleTypes]
  * @property {enum} [enumProp]
+ * @property {"hello"|"there"|"world"} [enumStringProp]
  */
 `
     expect(generate(schema)).toEqual(expected)
