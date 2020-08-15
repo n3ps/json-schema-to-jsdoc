@@ -71,7 +71,7 @@ function generate (schema, options = {}) {
   return format(config.outerIndent, jsdoc)
 }
 
-function parseOptions (options = {}) {
+function parseOptions (options) {
   const asteriskAndWhitespaceLength = 3 // ' * '
   const outerIndent = (options.indentChar || ' ').repeat(options.indent || 0)
   const indentMaxDelta = options.maxLength - outerIndent.length -
