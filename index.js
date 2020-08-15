@@ -197,6 +197,9 @@ function getType (schema, rootSchema) {
     if (schema.type === 'string') {
       return `"${schema.enum.join('"|"')}"`
     }
+    if (schema.type === 'number') {
+      return `${schema.enum.join('|')}`
+    }
     return 'enum'
   }
 
