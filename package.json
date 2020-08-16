@@ -39,14 +39,14 @@
     "json-pointer": "^0.6.0"
   },
   "devDependencies": {
-    "eslint": "^7.3.1",
+    "eslint": "^7.7.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "husky": "^4.2.5",
-    "jest": "^26.1.0",
-    "jsdoc": "^3.6.4"
+    "jest": "^26.4.0",
+    "jsdoc": "^3.6.5"
   }
 }
