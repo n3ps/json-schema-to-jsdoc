@@ -55,6 +55,18 @@ describe('Simple schemas', () => {
     expect(generate(schema)).toEqual(expected)
   })
 
+  it('Number with enum', function () {
+    const schema = {
+      type: 'number',
+      enum: [12, 34.5, 6789]
+    }
+    const expected = `/**
+ * @typedef {12|34.5|6789}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
   it('Simple array with title', function () {
     const schema = {
       title: 'special',
