@@ -12,7 +12,7 @@ Useful when you already have a JSON Schema and want to document the types you wa
 ## Usage
 
 ```js
-const jsdoc = require('json-schema-to-jsdoc');
+const jsdoc = require('json-schema-to-jsdoc')
 
 const schema = {
   "title": "Person",
@@ -21,20 +21,20 @@ const schema = {
     "name": {"type": "string", "description": "A person's name"},
     "age": {"type": "integer", "description": "A person's age"}
   },
-  "required" : ["name"]
+  "required": ["name"]
 }
 
-jsdoc(schema /* , optionsObject */);
+jsdoc(schema /* , optionsObject */)
 ```
 
 ### Output
 
 ```js
 /**
-  * @typedef {object}
-  * @property {string} name A person's name
-  * @property {integer} [age] A person's age
-  */
+ * @typedef {object} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
 ```
 
 ### Examples
@@ -45,15 +45,15 @@ jsdoc(schema /* , optionsObject */);
 ```js
 jsdoc(schema, {
     hyphenatedDescriptions: true
-});
+})
 ```
 
 ```js
 /**
-  * @typedef {object}
-  * @property {string} name - A person's name
-  * @property {integer} [age] - A person's age
-  */
+ * @typedef {object} Person
+ * @property {string} name - A person's name
+ * @property {integer} [age] - A person's age
+ */
 ```
 
 ### `autoDescribe`
@@ -61,16 +61,16 @@ jsdoc(schema, {
 ```js
 jsdoc(schema, {
     autoDescribe: true
-});
+})
 ```
 
 ```js
 /**
-  * Represents a Person object
-  * @typedef {object}
-  * @property {string} name A person's name
-  * @property {integer} [age] A person's age
-  */
+ * Represents a Person object
+ * @typedef {object} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
 ```
 
 ### `types`
@@ -80,16 +80,15 @@ jsdoc(schema, {
     types: {
       object: 'PlainObject'
     }
-});
+})
 ```
 
 ```js
 /**
-  * Represents a Person object
-  * @typedef {PlainObject}
-  * @property {string} name A person's name
-  * @property {integer} [age] A person's age
-  */
+ * @typedef {PlainObject} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
 ```
 
 ### Options
