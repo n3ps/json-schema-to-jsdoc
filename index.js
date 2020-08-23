@@ -121,7 +121,7 @@ function processProperties (schema, rootSchema, base, config) {
       const prop = props[property]
       const root = base ? `${base}.` : ''
       const prefixedProperty = root + property
-      const defaultValue = props[property].default
+      const defaultValue = prop.default
       const optional = !required.includes(property)
       if (prop.type === 'object' && prop.properties) {
         result.push(...writeProperty('object', prefixedProperty, prop.description, optional, defaultValue, config))
@@ -145,10 +145,23 @@ function writeDescription (schema, config) {
   if (description === undefined) {
     description = config.autoDescribe ? generateDescription(schema.title, schema.type) : ''
   }
-  const typeMatch = config.types && config.types[schema.type]
+  let typeMatch
+  if (schema.format) {
+    typeMatch = config.formats && config.formats[schema.format] &&
+      config.formats[schema.format][schema.type]
+  }
+  if (typeMatch === undefined || typeMatch === null) {
+    typeMatch = config.types && config.types[schema.type]
+  }
 
   let type
-  if (config.types === null) {
+  if (config.types === null || config.formats === null ||
+    (config.formats && (
+      (config.formats[schema.format] === null) ||
+      (config.formats[schema.format] &&
+        config.formats[schema.format][schema.type] === null)
+    ))
+  ) {
     type = ''
   } else {
     type = ` {${
