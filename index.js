@@ -96,14 +96,14 @@ function processItems (schema, rootSchema, base, config) {
     const defaultValue = item.default
     const optional = !schema.minItems || i >= schema.minItems
     if (item.type === 'array' && item.items) {
-      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, config))
+      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, schema, config))
       result.push(...processItems(item, rootSchema, prefixedProperty, config))
     } else if (item.type === 'object' && item.properties) {
-      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, config))
+      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, schema, config))
       result.push(...processProperties(item, rootSchema, prefixedProperty, config))
     } else {
-      const type = getType(item, rootSchema) || getDefaultPropertyType(config)
-      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, config))
+      const type = getSchemaType(item, rootSchema) || getDefaultPropertyType(config)
+      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, item, config))
     }
   })
   return result
@@ -124,87 +124,24 @@ function processProperties (schema, rootSchema, base, config) {
       const defaultValue = prop.default
       const optional = !required.includes(property)
       if (prop.type === 'object' && prop.properties) {
-        result.push(...writeProperty('object', prefixedProperty, prop.description, optional, defaultValue, config))
+        result.push(...writeProperty('object', prefixedProperty, prop.description, optional, defaultValue, schema, config))
         result.push(...processProperties(prop, rootSchema, prefixedProperty, config))
       } else if (prop.type === 'array' && prop.items) {
-        result.push(...writeProperty('array', prefixedProperty, prop.description, optional, defaultValue, config))
+        result.push(...writeProperty('array', prefixedProperty, prop.description, optional, defaultValue, schema, config))
         result.push(...processItems(prop, rootSchema, prefixedProperty, config))
       } else {
-        const type = getType(prop, rootSchema) || getDefaultPropertyType(config, property)
-        result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, config))
+        const type = getSchemaType(prop, rootSchema) || getDefaultPropertyType(config, property)
+        result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, prop, config))
       }
     }
   }
   return result
 }
 
-function writeDescription (schema, config) {
-  const result = []
-  const { objectTagName = 'typedef' } = config
-  let { description } = schema
-  if (description === undefined) {
-    description = config.autoDescribe ? generateDescription(schema.title, schema.type) : ''
-  }
-  let typeMatch
-  if (schema.format) {
-    typeMatch = config.formats && config.formats[schema.format] &&
-      config.formats[schema.format][schema.type]
-  }
-  if (typeMatch === undefined || typeMatch === null) {
-    typeMatch = config.types && config.types[schema.type]
-  }
-
-  let type
-  if (config.types === null || config.formats === null ||
-    (config.formats && (
-      (config.formats[schema.format] === null) ||
-      (config.formats[schema.format] &&
-        config.formats[schema.format][schema.type] === null)
-    ))
-  ) {
-    type = ''
-  } else {
-    type = ` {${
-      typeMatch === ''
-        ? ''
-        : typeMatch || getType(schema, schema)
-      }}`
-  }
-
-  if (description || config.addDescriptionLineBreak) {
-    result.push(...wrapDescription(config, description))
-  }
-
-  const namepath = schema.title ? ` ${config.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
-  result.push(`@${objectTagName}${type}${namepath}`)
-
-  return result
-}
-
-function writeProperty (type, field, description = '', optional, defaultValue, config) {
-  let fieldTemplate
-  if (optional) {
-    fieldTemplate = `[${field}${defaultValue === undefined ? '' : `=${JSON.stringify(defaultValue)}`}]`
-  } else {
-    fieldTemplate = field
-  }
-
-  let desc
-  if (!description && !config.descriptionPlaceholder) {
-    desc = ''
-  } else if (config.hyphenatedDescriptions) {
-    desc = ` - ${description}`
-  } else {
-    desc = ` ${description}`
-  }
-  const typeExpression = type === null ? '' : `{${type}} `
-  return wrapDescription(config, `@property ${typeExpression}${fieldTemplate}${desc}`)
-}
-
-function getType (schema, rootSchema) {
+function getSchemaType (schema, rootSchema) {
   if (schema.$ref) {
     const ref = json.get(rootSchema, schema.$ref.slice(1))
-    return getType(ref, rootSchema)
+    return getSchemaType(ref, rootSchema)
   }
 
   if (schema.enum) {
@@ -217,7 +154,6 @@ function getType (schema, rootSchema) {
     ) {
       return `${schema.enum.join('|')}`
     }
-
     return schema.type === 'null' ? 'null' : 'enum'
   }
 
@@ -230,6 +166,79 @@ function getType (schema, rootSchema) {
   }
 
   return schema.type
+}
+
+function getType (schema, config, type) {
+  const typeCheck = type || schema.type
+  let typeMatch
+  if (schema.format) {
+    typeMatch = config.formats && config.formats[schema.format] &&
+      config.formats[schema.format][typeCheck]
+  }
+  if (typeMatch === undefined || typeMatch === null) {
+    typeMatch = config.types && config.types[typeCheck]
+  }
+
+  let typeStr
+  if (config.types === null || config.formats === null ||
+    (config.formats && (
+      (config.formats[schema.format] === null) ||
+      (config.formats[schema.format] &&
+        config.formats[schema.format][typeCheck] === null)
+    )) ||
+    (typeMatch !== '' && !typeMatch && (type === null || type === ''))
+  ) {
+    typeStr = ''
+  } else {
+    typeStr = ` {${
+      typeMatch === ''
+        ? ''
+        : typeMatch || type || getSchemaType(schema, schema)
+      }}`
+  }
+
+  return typeStr
+}
+
+function writeDescription (schema, config) {
+  const result = []
+  const { objectTagName = 'typedef' } = config
+  let { description } = schema
+  if (description === undefined) {
+    description = config.autoDescribe ? generateDescription(schema.title, schema.type) : ''
+  }
+
+  const type = getType(schema, config)
+
+  if (description || config.addDescriptionLineBreak) {
+    result.push(...wrapDescription(config, description))
+  }
+
+  const namepath = schema.title ? ` ${config.capitalizeTitle ? upperFirst(schema.title) : schema.title}` : ''
+  result.push(`@${objectTagName}${type}${namepath}`)
+
+  return result
+}
+
+function writeProperty (type, field, description = '', optional, defaultValue, schema, config) {
+  const typeExpression = getType(schema, config, type)
+
+  let fieldTemplate = ' '
+  if (optional) {
+    fieldTemplate += `[${field}${defaultValue === undefined ? '' : `=${JSON.stringify(defaultValue)}`}]`
+  } else {
+    fieldTemplate += field
+  }
+
+  let desc
+  if (!description && !config.descriptionPlaceholder) {
+    desc = ''
+  } else if (config.hyphenatedDescriptions) {
+    desc = ` - ${description}`
+  } else {
+    desc = ` ${description}`
+  }
+  return wrapDescription(config, `@property${typeExpression}${fieldTemplate}${desc}`)
 }
 
 function upperFirst (str) {

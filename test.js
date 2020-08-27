@@ -258,7 +258,7 @@ describe('Schemas with properties', () => {
 
     const expected = `/**
  * @typedef {PlainObject} NestedType
- * @property {object} cfg
+ * @property {PlainObject} cfg
  */
 `
 
@@ -663,6 +663,30 @@ describe('option: `formats`', () => {
       formats: {
         special: {
           object: 'PlainObject'
+        }
+      }
+    })).toEqual(expected)
+  })
+
+  it('Object with properties using `formats`', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anHTMLProp: {
+          type: 'string',
+          format: 'html'
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {HTML} [anHTMLProp]
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        html: {
+          string: 'HTML'
         }
       }
     })).toEqual(expected)
