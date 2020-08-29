@@ -415,6 +415,10 @@ describe('Schemas with items', function () {
         },
         {
           enum: ['hello', 'world']
+        },
+        {
+          type: 'string',
+          default: 'hello'
         }
       ]
     }
@@ -426,6 +430,7 @@ describe('Schemas with items', function () {
  * @property {?string} 2
  * @property {string|number} [3]
  * @property {enum} [4]
+ * @property {string} [5="hello"]
  */
 `
     expect(generate(schema)).toEqual(expected)
