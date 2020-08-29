@@ -94,15 +94,16 @@ function processItems (schema, rootSchema, base, config) {
     const root = base ? `${base}.` : ''
     const prefixedProperty = root + i
     const defaultValue = item.default
+    const optional = !schema.minItems || i >= schema.minItems
     if (item.type === 'array' && item.items) {
-      result.push(...writeProperty('array', prefixedProperty, item.description, false, defaultValue, config))
+      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, config))
       result.push(...processItems(item, rootSchema, prefixedProperty, config))
     } else if (item.type === 'object' && item.properties) {
-      result.push(...writeProperty('object', prefixedProperty, item.description, false, defaultValue, config))
+      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, config))
       result.push(...processProperties(item, rootSchema, prefixedProperty, config))
     } else {
       const type = getType(item, rootSchema) || getDefaultPropertyType(config)
-      result.push(...writeProperty(type, prefixedProperty, item.description, false, defaultValue, config))
+      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, config))
     }
   })
   return result
