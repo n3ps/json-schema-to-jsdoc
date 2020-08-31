@@ -121,14 +121,14 @@ function processProperties (schema, rootSchema, base, config) {
       const root = base ? `${base}.` : ''
       const prefixedProperty = root + property
       const defaultValue = props[property].default
+      const optional = !required.includes(property)
       if (prop.type === 'object' && prop.properties) {
-        result.push(...writeProperty('object', prefixedProperty, prop.description, true, defaultValue, config))
+        result.push(...writeProperty('object', prefixedProperty, prop.description, optional, defaultValue, config))
         result.push(...processProperties(prop, rootSchema, prefixedProperty, config))
       } else if (prop.type === 'array' && prop.items) {
-        result.push(...writeProperty('array', prefixedProperty, prop.description, true, defaultValue, config))
+        result.push(...writeProperty('array', prefixedProperty, prop.description, optional, defaultValue, config))
         result.push(...processItems(prop, rootSchema, prefixedProperty, config))
       } else {
-        const optional = !required.includes(property)
         const type = getType(prop, rootSchema) || getDefaultPropertyType(config, property)
         result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, config))
       }

@@ -239,6 +239,59 @@ describe('Schemas with properties', () => {
     expect(generate(schema)).toEqual(expected)
   })
 
+  it('Required object', function () {
+    const schema = {
+      type: 'object',
+      title: 'NestedType',
+      properties: {
+        cfg: {
+          type: 'object',
+          properties: {
+          }
+        }
+      },
+      required: [
+        'cfg'
+      ]
+    }
+
+    const expected = `/**
+ * @typedef {PlainObject} NestedType
+ * @property {object} cfg
+ */
+`
+
+    expect(generate(schema, {
+      types: {
+        object: 'PlainObject'
+      }
+    })).toEqual(expected)
+  })
+
+  it('Required array', function () {
+    const schema = {
+      type: 'object',
+      title: 'NestedType',
+      properties: {
+        cfg: {
+          type: 'array',
+          items: []
+        }
+      },
+      required: [
+        'cfg'
+      ]
+    }
+
+    const expected = `/**
+ * @typedef {object} NestedType
+ * @property {array} cfg
+ */
+`
+
+    expect(generate(schema)).toEqual(expected)
+  })
+
   it('Object with untyped property', function () {
     const schema = {
       type: 'object',
