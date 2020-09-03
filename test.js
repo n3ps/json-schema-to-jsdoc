@@ -1,8 +1,19 @@
 'use strict'
 
 const generate = require('./index')
+const jsdoc = generate
 
 const trailingSpace = ' '
+
+const schema = {
+  title: 'Person',
+  type: 'object',
+  properties: {
+    name: { type: 'string', description: "A person's name" },
+    age: { type: 'integer', description: "A person's age" }
+  },
+  required: ['name']
+}
 
 describe('Simple schemas', () => {
   it('Guards', function () {
@@ -50,6 +61,18 @@ describe('Simple schemas', () => {
     }
     const expected = `/**
  * @typedef {"some"|"different"|"types"}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Number with enum', function () {
+    const schema = {
+      type: 'number',
+      enum: [12, 34.5, 6789]
+    }
+    const expected = `/**
+ * @typedef {12|34.5|6789}
  */
 `
     expect(generate(schema)).toEqual(expected)
@@ -860,5 +883,60 @@ ${indent} */
     expect(generate(schema, {
       indent: 4
     })).toEqual(expectedNowrapping)
+  })
+})
+
+describe('Examples', () => {
+  it('No options', () => {
+    const expected = `/**
+ * @typedef {object} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    const result = jsdoc(schema)
+    expect(result).toEqual(expected)
+  })
+
+  it('`hyphenatedDescriptions`', () => {
+    const expected = `/**
+ * @typedef {object} Person
+ * @property {string} name - A person's name
+ * @property {integer} [age] - A person's age
+ */
+`
+    const result = jsdoc(schema, {
+      hyphenatedDescriptions: true
+    })
+    expect(result).toEqual(expected)
+  })
+
+  it('`autoDescribe`', () => {
+    const expected = `/**
+ * Represents a Person object
+ * @typedef {object} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    const result = jsdoc(schema, {
+      autoDescribe: true
+    })
+    expect(result).toEqual(expected)
+  })
+
+  it('`types`', () => {
+    const expected = `/**
+ * @typedef {PlainObject} Person
+ * @property {string} name A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    const result = jsdoc(schema, {
+      types: {
+        object: 'PlainObject'
+      }
+    })
+    expect(result).toEqual(expected)
   })
 })

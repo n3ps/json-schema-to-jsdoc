@@ -74,7 +74,7 @@ function generate (schema, options = {}) {
   return format(config.outerIndent, jsdoc)
 }
 
-function parseOptions (options = {}) {
+function parseOptions (options) {
   const asteriskAndWhitespaceLength = 3 // ' * '
   const outerIndent = (options.indentChar || ' ').repeat(options.indent || 0)
   const indentMaxDelta = options.maxLength - outerIndent.length -
@@ -262,6 +262,9 @@ function getType (schema, rootSchema) {
   if (schema.enum) {
     if (schema.type === 'string') {
       return `"${schema.enum.join('"|"')}"`
+    }
+    if (schema.type === 'number') {
+      return `${schema.enum.join('|')}`
     }
     return 'enum'
   }
