@@ -2,6 +2,7 @@
 
 const json = require('json-pointer')
 const NewBlockIndicator = 1
+let generatedDefs = []
 
 function getDefaultPropertyType ({
   propertyNameAsType, capitalizeProperty, defaultPropertyType
@@ -60,17 +61,18 @@ function generate (schema, options = {}) {
 
   const config = parseOptions(options)
 
-  jsdoc.push(...writeDescription(schema, config))
-
-  if (json.has(schema, '/properties')) {
-    jsdoc.push(...processProperties(schema, schema, null, config))
-  }
-  if (json.has(schema, '/items')) {
-    jsdoc.push(...processItems(schema, schema, null, config))
+  let defs
+  if (json.has(schema, '/definitions')) {
+    defs = json.get(schema, '/definitions')
+  } else if (json.has(schema, '/$defs')) {
+    defs = json.get(schema, '/$defs')
   }
 
-  jsdoc.push(...processDefinitions(schema, schema, null, config))
+  const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
 
+  jsdoc.push(...writeDescription(schema, schema, config))
+  jsdoc.push(...processObject(schema, '', '', required, schema, config, true))
+  jsdoc.push(...processDefinitions(defs, schema, null, config))
   return format(config.outerIndent, jsdoc)
 }
 
@@ -112,6 +114,7 @@ function processItems (schema, rootSchema, base, config) {
 }
 
 function processProperties (schema, rootSchema, base, config) {
+  if (!json.has(schema, '/properties')) return []
   const props = json.get(schema, '/properties')
   const required = json.has(schema, '/required') ? json.get(schema, '/required') : []
   const result = []
@@ -120,90 +123,156 @@ function processProperties (schema, rootSchema, base, config) {
     if (Array.isArray(config.ignore) && config.ignore.includes(property)) {
       continue
     } else {
-      const prop = props[property]
       const root = base ? `${base}.` : ''
       const prefixedProperty = root + property
-      const defaultValue = props[property].default
-
-      if(prop.allOf){
-        let refs = []
-        let entrys = []
-
-        for(let e of prop.allOf){
-          if(json.has(e, '/$ref')){
-            refs.push(e)
-          }else{
-            entrys.push(e)
-          }
-        }
-
-        if(refs.length ==0){
-          result.push(...writeProperty('object', prefixedProperty, prop.description, true, defaultValue, config))
-        }else if(refs.length == 1){
-          const optional = !required.includes(property)
-          let type = getType(refs[0], rootSchema) || getDefaultPropertyType(config, property)
-          result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, config))
-        }else{
-          result.push(...writeProperty('object', prefixedProperty, prop.description, true, defaultValue, config))
-          for(let e of refs){
-            result.push(...processProperties(json.get(rootSchema,e['$ref'].replace(/^#/gm,"")), rootSchema, prefixedProperty, config))
-          }
-        }
-
-        for(let e of entrys){
-          const type = getType(e, rootSchema) || getDefaultPropertyType(config, property)
-          if(type === 'object') result.push(...processProperties(e, rootSchema, prefixedProperty, config))
-        }
-
-
-      }else{
-
-        if (prop.type === 'object' && prop.properties) {
-          result.push(...writeProperty('object', prefixedProperty, prop.description, true, defaultValue, config))
-          result.push(...processProperties(prop, rootSchema, prefixedProperty, config))
-        } else if (prop.type === 'array' && prop.items) {
-          result.push(...writeProperty('array', prefixedProperty, prop.description, true, defaultValue, config))
-          result.push(...processItems(prop, rootSchema, prefixedProperty, config))
-        } else {
-          const optional = !required.includes(property)
-          const type = getType(prop, rootSchema) || getDefaultPropertyType(config, property)
-          result.push(...writeProperty(type, prefixedProperty, prop.description, optional, defaultValue, config))
-        }
-      }
+      result.push(...processObject(props[property], property, prefixedProperty, required, rootSchema, config))
     }
   }
   return result
 }
 
-function processDefinitions(schema, rootSchema, base, config){
-	let defs
-	if(json.has(schema, '/definitions')){
-		defs = json.get(schema, '/definitions')
-	}else if(json.has(schema, '/$defs')){
-		defs = json.get(schema, '/$defs')
-	}else{
-		return []
-	}
+function processObject (obj, objName, prefixedProperty, required, rootSchema, config, rootElement) {
+  const defaultValue = obj.default
+  const result = []
 
-	const result = []
+  if (obj.allOf || obj.anyOf) {
+    const refs = []
+    const refsIsA = []
+    const refsAnyOf = []
+    const entries = []
+    const container = obj.allOf ? obj.allOf : obj.anyOf
+    const separator = obj.allOf ? '&' : '|'
 
-	for(let def in defs){
-	  result.push(NewBlockIndicator)
-		result.push(...writeDescription(defs[def], config))
-		if (json.has(defs[def], '/properties')) {
-			result.push(...processProperties(defs[def], rootSchema, null, config))
-		}
-		if (json.has(defs[def], '/items')) {
-			result.push(...processItems(defs[def], rootSchema, null, config))
-		}
-	}
+    for (const e of container) {
+      if (json.has(e, '/$ref')) {
+        if (e.classRelation && e.classRelation === 'is-a') {
+          refsIsA.push(e)
+        } else {
+          refs.push(e)
+        }
+      } else {
+        entries.push(e)
+      }
+    }
+
+    if (obj.anyOf) {
+      let count = 0
+      for (const e of refs) {
+        const refElement = json.get(rootSchema, e.$ref.replace(/^#/gm, ''))
+        if (refElement.title) {
+          e.title = `${obj.title}_${refElement.title}`
+        } else {
+          e.title = `${obj.title}_subtype${count}`
+          count++
+        }
+        refsAnyOf.push(e)
+        generatedDefs.push(e)
+      }
+      for (const e of entries) {
+        const type = getType(e, rootSchema) || getDefaultPropertyType(config, objName)
+        if (type === 'object') {
+          if (e.title) {
+            e.title = `${obj.title}_${e.title}`
+          } else {
+            e.title = `${obj.title}_subtype${count}`
+            count++
+          }
+          refsAnyOf.push(e)
+          generatedDefs.push(e)
+        }
+      }
+    }
+
+    if (refsIsA.length === 0 && refsAnyOf.length === 0) {
+      if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+    } else {
+      const optional = !required.includes(objName)
+      let type = ''
+      for (let i = 0; i < refsIsA.length; i++) {
+        if (type !== '') type += separator
+        type += getType(refsIsA[i], rootSchema)
+      }
+      for (let i = 0; i < refsAnyOf.length; i++) {
+        if (type !== '') type += separator
+        type += refsAnyOf[i].title
+      }
+      if (type === '') type = getDefaultPropertyType(config, objName)
+      if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+    }
+
+    if (obj.allOf) {
+      for (const e of refs) {
+        result.push(...processProperties(json.get(rootSchema, e.$ref.replace(/^#/gm, '')), rootSchema, prefixedProperty, config))
+      }
+      for (const e of entries) {
+        result.push(...processProperties(e, rootSchema, prefixedProperty, config))
+      }
+    }
+  } else {
+    if (obj.$ref) {
+      if (obj.classRelation && obj.classRelation === 'is-a') {
+        const optional = !required.includes(objName)
+        const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
+        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+      } else {
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+        result.push(...processProperties(json.get(rootSchema, obj.$ref.slice(1)), rootSchema, prefixedProperty, config))
+      }
+    } else {
+      if (obj.type === 'object' && obj.properties) {
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+        result.push(...processProperties(obj, rootSchema, prefixedProperty, config))
+      } else if (obj.type === 'array' && obj.items) {
+        if (!rootElement) result.push(...writeProperty('array', prefixedProperty, obj.description, true, defaultValue, config))
+        result.push(...processItems(obj, rootSchema, prefixedProperty, config))
+      } else {
+        const optional = !required.includes(objName)
+        const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
+        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+      }
+    }
+  }
 
   return result
-
-
 }
 
-function writeDescription (schema, config) {
+function processDefinitions (defs, rootSchema, base, config) {
+  const result = []
+
+  for (const def in defs) {
+    result.push(...writeDefinition(defs[def], rootSchema, config))
+  }
+  for (const def of generatedDefs) {
+    if (def.$ref) {
+      const edit = { ...json.get(rootSchema, def.$ref.replace(/^#/gm, '')) }
+      edit.title = def.title
+      result.push(...writeDefinition(edit, rootSchema, config))
+    } else {
+      result.push(...writeDefinition(def, rootSchema, config))
+    }
+  }
+
+  generatedDefs = []
+
+  return result
+}
+
+function writeDefinition (def, rootSchema, config) {
+  const result = []
+  result.push(NewBlockIndicator)
+  result.push(...writeDescription(def, rootSchema, config))
+  if (def.type === 'object') {
+    if (json.has(def, '/properties')) {
+      result.push(...processProperties(def, rootSchema, null, config))
+    }
+    if (json.has(def, '/items')) {
+      result.push(...processItems(def, rootSchema, null, config))
+    }
+  }
+  return result
+}
+
+function writeDescription (schema, rootSchema, config) {
   const result = []
   const { objectTagName = 'typedef' } = config
   let { description } = schema
@@ -219,7 +288,7 @@ function writeDescription (schema, config) {
     type = ` {${
       typeMatch === ''
         ? ''
-        : typeMatch || getType(schema, schema)
+        : typeMatch || getType(schema, rootSchema)
       }}`
   }
 
@@ -256,7 +325,11 @@ function writeProperty (type, field, description = '', optional, defaultValue, c
 function getType (schema, rootSchema) {
   if (schema.$ref) {
     const ref = json.get(rootSchema, schema.$ref.slice(1))
-	  return ref.title
+    if (schema.classRelation && schema.classRelation === 'is-a') {
+      return ref.title
+    } else {
+      return ref.type
+    }
   }
 
   if (schema.enum) {
@@ -294,10 +367,10 @@ function generateDescription (title, type) {
 function format (outerIndent, lines) {
   const result = [`${outerIndent}/**`]
 
-  result.push(...lines.map(line =>{
-    if(line == NewBlockIndicator){
+  result.push(...lines.map(line => {
+    if (line === NewBlockIndicator) {
       return ' */\n\n/**'
-    }else{
+    } else {
       return line ? `${outerIndent} * ${line}` : ' *'
     }
   }))

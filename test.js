@@ -92,28 +92,6 @@ describe('Simple schemas', () => {
 })
 
 describe('Schemas with properties', () => {
-  it('Schema with `$ref` (object)', function () {
-    const schema = {
-      $defs: { // New name for `definitions`
-        definitionType: {
-          type: 'number'
-        }
-      },
-      type: 'object',
-      properties: {
-        aNumberProp: {
-          $ref: '#/$defs/definitionType'
-        }
-      }
-    }
-    const expected = `/**
- * @typedef {object}
- * @property {number} [aNumberProp]
- */
-`
-    expect(generate(schema)).toEqual(expected)
-  })
-
   it('Object with properties', function () {
     const schema = {
       type: 'object',
@@ -260,10 +238,11 @@ describe('Schemas with properties', () => {
 })
 
 describe('Schemas with items', function () {
-  it('Schema with `$ref` (array with items array)', function () {
+  it('Schema with `$ref` (array with items array), default', function () {
     const schema = {
       $defs: { // New name for `definitions`
         definitionType: {
+          title: 'customNumber',
           type: 'number'
         }
       },
@@ -276,6 +255,36 @@ describe('Schemas with items', function () {
  * @typedef {array}
  * @property {number} 0
  */
+
+/**
+ * @typedef {number} customNumber
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Schema with `$ref` (array with items array), is-a', function () {
+    const schema = {
+      $defs: { // New name for `definitions`
+        definitionType: {
+          title: 'customNumber',
+          type: 'number'
+        }
+      },
+      type: 'array',
+      items: [{
+        $ref: '#/$defs/definitionType',
+        classRelation: 'is-a'
+      }]
+    }
+    const expected = `/**
+ * @typedef {array}
+ * @property {customNumber} 0
+ */
+
+/**
+ * @typedef {number} customNumber
+ */
 `
     expect(generate(schema)).toEqual(expected)
   })
@@ -284,6 +293,7 @@ describe('Schemas with items', function () {
     const schema = {
       $defs: { // New name for `definitions`
         definitionType: {
+          title: 'customNumber',
           type: 'number'
         }
       },
@@ -294,6 +304,10 @@ describe('Schemas with items', function () {
     }
     const expected = `/**
  * @typedef {array}
+ */
+
+/**
+ * @typedef {number} customNumber
  */
 `
     expect(generate(schema)).toEqual(expected)
@@ -389,6 +403,574 @@ describe('Schemas with items', function () {
  * @property {object} [anObjectProp]
  * @property {object} [anObjectProp.aNestedProp]
  * @property {number} [anObjectProp.aNestedProp.aDeeplyNestedProp]
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+})
+
+describe('Nested schemas', () => {
+  it('Simple Object reference default, first element', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        }
+      },
+      title: 'Laborer',
+      $ref: '#/$defs/Person'
+    }
+    const expected = `/**
+ * @typedef {object} Laborer
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Simple Object reference default, nested element', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        }
+      },
+      title: 'LaborerList',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          $ref: '#/$defs/Person'
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} LaborerList
+ * @property {object} [Laborer]
+ * @property {string} [Laborer.name] A person's name
+ * @property {integer} [Laborer.age] A person's age
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Simple Object reference is-a, first element', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        }
+      },
+      title: 'Laborer',
+      $ref: '#/$defs/Person',
+      classRelation: 'is-a'
+    }
+    const expected = `/**
+ * @typedef {Person} Laborer
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Simple Object reference is-a, nested element', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        }
+      },
+      title: 'LaborerList',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          $ref: '#/$defs/Person',
+          classRelation: 'is-a'
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} LaborerList
+ * @property {Person} [Laborer]
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('allOf reference default', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          allOf: [
+            { $ref: '#/$defs/Person' },
+            { $ref: '#/$defs/Address' }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {object} [Laborer]
+ * @property {string} [Laborer.name] A person's name
+ * @property {integer} [Laborer.age] A person's age
+ * @property {string} [Laborer.town] The town
+ * @property {string} [Laborer.street] The street
+ * @property {integer} [Laborer.number] The number
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('allOf reference is-a', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          allOf: [
+            { $ref: '#/$defs/Person', classRelation: 'is-a' },
+            { $ref: '#/$defs/Address', classRelation: 'is-a' }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Person&Address} [Laborer]
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('allOf reference nested object', () => {
+    const schema = {
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          allOf: [
+            {
+              type: 'object',
+              properties: {
+                Number: { type: 'number', description: 'A number' },
+                String: { type: 'string', description: 'A String' }
+              }
+            }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {object} [Laborer]
+ * @property {number} [Laborer.Number] A number
+ * @property {string} [Laborer.String] A String
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('allOf reference is-a, default and nested Object', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          allOf: [
+            { $ref: '#/$defs/Person' },
+            { $ref: '#/$defs/Address', classRelation: 'is-a' },
+            {
+              type: 'object',
+              properties: {
+                Number: { type: 'number', description: 'A number' },
+                String: { type: 'string', description: 'A String' }
+              }
+            }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Address} [Laborer]
+ * @property {string} [Laborer.name] A person's name
+ * @property {integer} [Laborer.age] A person's age
+ * @property {number} [Laborer.Number] A number
+ * @property {string} [Laborer.String] A String
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('anyOf reference default', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          anyOf: [
+            { $ref: '#/$defs/Person' },
+            { $ref: '#/$defs/Address' }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Laborer_Person|Laborer_Address} [Laborer]
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+
+/**
+ * @typedef {object} Laborer_Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Laborer_Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('anyOf reference is-a', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          anyOf: [
+            { $ref: '#/$defs/Person', classRelation: 'is-a' },
+            { $ref: '#/$defs/Address', classRelation: 'is-a' }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Person|Address} [Laborer]
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('anyOf reference nested object', () => {
+    const schema = {
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          anyOf: [
+            {
+              type: 'object',
+              properties: {
+                Number: { type: 'number', description: 'A number' },
+                String: { type: 'string', description: 'A String' }
+              }
+            }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Laborer_subtype0} [Laborer]
+ */
+
+/**
+ * @typedef {object} Laborer_subtype0
+ * @property {number} [Number] A number
+ * @property {string} [String] A String
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('anyOf reference is-a, default and nested Object', () => {
+    const schema = {
+      $defs: {
+        Person: {
+          title: 'Person',
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: "A person's name" },
+            age: { type: 'integer', description: "A person's age" }
+          }
+        },
+        Address: {
+          title: 'Address',
+          type: 'object',
+          properties: {
+            town: { type: 'string', description: 'The town' },
+            street: { type: 'string', description: 'The street' },
+            number: { type: 'integer', description: 'The number' }
+          }
+        }
+      },
+      title: 'List',
+      type: 'object',
+      properties: {
+        Laborer: {
+          title: 'Laborer',
+          anyOf: [
+            { $ref: '#/$defs/Person' },
+            { $ref: '#/$defs/Address', classRelation: 'is-a' },
+            {
+              type: 'object',
+              properties: {
+                Number: { type: 'number', description: 'A number' },
+                String: { type: 'string', description: 'A String' }
+              }
+            }
+          ]
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object} List
+ * @property {Address|Laborer_Person|Laborer_subtype0} [Laborer]
+ */
+
+/**
+ * @typedef {object} Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Address
+ * @property {string} [town] The town
+ * @property {string} [street] The street
+ * @property {integer} [number] The number
+ */
+
+/**
+ * @typedef {object} Laborer_Person
+ * @property {string} [name] A person's name
+ * @property {integer} [age] A person's age
+ */
+
+/**
+ * @typedef {object} Laborer_subtype0
+ * @property {number} [Number] A number
+ * @property {string} [String] A String
  */
 `
     expect(generate(schema)).toEqual(expected)
