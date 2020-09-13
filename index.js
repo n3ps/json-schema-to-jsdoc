@@ -197,10 +197,14 @@ function getType (schema, rootSchema) {
     if (schema.type === 'string') {
       return `"${schema.enum.join('"|"')}"`
     }
-    if (schema.type === 'number') {
+    if (
+      schema.type === 'number' || schema.type === 'integer' ||
+      schema.type === 'boolean'
+    ) {
       return `${schema.enum.join('|')}`
     }
-    return 'enum'
+
+    return schema.type === 'null' ? 'null' : 'enum'
   }
 
   if (Array.isArray(schema.type)) {

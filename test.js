@@ -78,6 +78,42 @@ describe('Simple schemas', () => {
     expect(generate(schema)).toEqual(expected)
   })
 
+  it('Integer with enum', function () {
+    const schema = {
+      type: 'integer',
+      enum: [12, 345, 6789]
+    }
+    const expected = `/**
+ * @typedef {12|345|6789}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Boolean with enum', function () {
+    const schema = {
+      type: 'boolean',
+      enum: [false, true, false]
+    }
+    const expected = `/**
+ * @typedef {false|true|false}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('null with enum', function () {
+    const schema = {
+      type: 'null',
+      enum: [null]
+    }
+    const expected = `/**
+ * @typedef {null}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
   it('Simple array with title', function () {
     const schema = {
       title: 'special',
