@@ -185,7 +185,7 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
     }
 
     if (refsIsA.length === 0 && refsAnyOf.length === 0) {
-      if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+      if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
     } else {
       const optional = !required.includes(objName)
       let type = ''
