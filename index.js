@@ -134,6 +134,7 @@ function processProperties (schema, rootSchema, base, config) {
 function processObject (obj, objName, prefixedProperty, required, rootSchema, config, rootElement) {
   const defaultValue = obj.default
   const result = []
+  const optional = !required.includes(objName)
 
   if (obj.allOf || obj.anyOf) {
     const refs = []
@@ -211,22 +212,20 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
   } else {
     if (obj.$ref) {
       if (obj.classRelation && obj.classRelation === 'is-a') {
-        const optional = !required.includes(objName)
         const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
         if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
       } else {
-        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
         result.push(...processProperties(json.get(rootSchema, obj.$ref.slice(1)), rootSchema, prefixedProperty, config))
       }
     } else {
       if (obj.type === 'object' && obj.properties) {
-        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, true, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
         result.push(...processProperties(obj, rootSchema, prefixedProperty, config))
       } else if (obj.type === 'array' && obj.items) {
-        if (!rootElement) result.push(...writeProperty('array', prefixedProperty, obj.description, true, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('array', prefixedProperty, obj.description, optional, defaultValue, config))
         result.push(...processItems(obj, rootSchema, prefixedProperty, config))
       } else {
-        const optional = !required.includes(objName)
         const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
         if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
       }
@@ -336,10 +335,14 @@ function getType (schema, rootSchema) {
     if (schema.type === 'string') {
       return `"${schema.enum.join('"|"')}"`
     }
-    if (schema.type === 'number') {
+    if (
+      schema.type === 'number' || schema.type === 'integer' ||
+      schema.type === 'boolean'
+    ) {
       return `${schema.enum.join('|')}`
     }
-    return 'enum'
+
+    return schema.type === 'null' ? 'null' : 'enum'
   }
 
   if (Array.isArray(schema.type)) {
