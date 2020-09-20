@@ -167,6 +167,7 @@ describe('Schemas with properties', () => {
             aNestedArrayProp: {
               description: 'Array desc.',
               type: 'array',
+              minItems: 1,
               items: [
                 {
                   type: 'number'
@@ -357,6 +358,7 @@ describe('Schemas with items', function () {
         }
       },
       type: 'array',
+      minItems: 1,
       items: [{
         $ref: '#/$defs/definitionType'
       }]
@@ -391,6 +393,7 @@ describe('Schemas with items', function () {
   it('Array with items', function () {
     const schema = {
       type: 'array',
+      minItems: 3,
       items: [
         {
           type: 'string'
@@ -412,6 +415,10 @@ describe('Schemas with items', function () {
         },
         {
           enum: ['hello', 'world']
+        },
+        {
+          type: 'string',
+          default: 'hello'
         }
       ]
     }
@@ -421,8 +428,9 @@ describe('Schemas with items', function () {
  * @property {object} 1
  * @property {boolean} [1.aNestedProp] Boolean desc.
  * @property {?string} 2
- * @property {string|number} 3
- * @property {enum} 4
+ * @property {string|number} [3]
+ * @property {enum} [4]
+ * @property {string} [5="hello"]
  */
 `
     expect(generate(schema)).toEqual(expected)
@@ -431,9 +439,11 @@ describe('Schemas with items', function () {
   it('Array with untyped property', function () {
     const schema = {
       type: 'array',
+      minItems: 1,
       items: [
         {
           type: 'array',
+          minItems: 2,
           items: [
             {
             },
