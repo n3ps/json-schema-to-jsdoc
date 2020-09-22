@@ -1147,4 +1147,31 @@ describe('Examples', () => {
     })
     expect(result).toEqual(expected)
   })
+
+  it('`formats`', () => {
+    const schema = {
+      title: 'Info',
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string', format: 'html', description: 'The HTML source'
+        }
+      },
+      required: ['code']
+    }
+
+    const expected = `/**
+ * @typedef {object} Info
+ * @property {HTML} code The HTML source
+ */
+`
+    const result = jsdoc(schema, {
+      formats: {
+        html: {
+          string: 'HTML'
+        }
+      }
+    })
+    expect(result).toEqual(expected)
+  })
 })

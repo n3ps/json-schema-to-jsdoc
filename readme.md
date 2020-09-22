@@ -91,6 +91,36 @@ jsdoc(schema, {
  */
 ```
 
+### `formats`
+
+```js
+const schema = {
+  title: 'Info',
+  type: 'object',
+  properties: {
+    code: {
+      type: 'string', format: 'html', description: 'The HTML source'
+    }
+  },
+  required: ['code']
+}
+
+jsdoc(schema, {
+    formats: {
+      html: {
+        string: 'HTML'
+      }
+    }
+})
+```
+
+```js
+/**
+ * @typedef {object} Info
+ * @property {HTML} code The HTML source
+ */
+```
+
 ### Options
 
 - `addDescriptionLineBreak: boolean` - Inserts an empty line when
