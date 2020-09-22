@@ -584,6 +584,91 @@ describe('option: `types`', () => {
   })
 })
 
+describe('option: `formats`', () => {
+  it('Simple object with `formats`: null', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: null
+    })).toEqual(expected)
+  })
+
+  it('Simple object with `formats`: null for format', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: null
+      }
+    })).toEqual(expected)
+  })
+
+  it('Simple object with `formats`: null for type and format', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: null
+        }
+      }
+    })).toEqual(expected)
+  })
+
+  it('Simple object with empty string `formats`', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef {}
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: ''
+        }
+      }
+    })).toEqual(expected)
+  })
+  it('Simple object with `formats`', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef {PlainObject}
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: 'PlainObject'
+        }
+      }
+    })).toEqual(expected)
+  })
+})
+
 describe('option: `propertyNameAsType`', function () {
   it('Object with untyped property', function () {
     const schema = {
@@ -896,7 +981,7 @@ describe('option `defaultPropertyType`', function () {
     })).toEqual(expected)
   })
 
-  it('Object with untyped property and `false` `defaultPropertyType`', function () {
+  it('Object with untyped property and `null` `defaultPropertyType`', function () {
     const schema = {
       type: 'object',
       properties: {
