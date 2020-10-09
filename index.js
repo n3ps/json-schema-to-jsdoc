@@ -101,14 +101,14 @@ function processItems (schema, rootSchema, base, config) {
     const defaultValue = item.default
     const optional = !schema.minItems || i >= schema.minItems
     if (item.type === 'array' && item.items) {
-      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, schema, config))
+      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, schema, rootSchema, config))
       result.push(...processItems(item, rootSchema, prefixedProperty, config))
     } else if (item.type === 'object' && item.properties) {
-      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, schema, config))
+      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, schema, rootSchema, config))
       result.push(...processProperties(item, rootSchema, prefixedProperty, config))
     } else {
       const type = getSchemaType(item, rootSchema) || getDefaultPropertyType(config)
-      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, item, config))
+      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, item, rootSchema, config))
     }
   })
   return result
@@ -171,7 +171,7 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
         generatedDefs.push(e)
       }
       for (const e of entries) {
-        const type = getType(e, rootSchema) || getDefaultPropertyType(config, objName)
+        const type = getSchemaType(e, rootSchema, config) || getDefaultPropertyType(config, objName)
         if (type === 'object') {
           if (e.title) {
             e.title = `${obj.title}_${e.title}`
@@ -186,20 +186,20 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
     }
 
     if (refsIsA.length === 0 && refsAnyOf.length === 0) {
-      if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
+      if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
     } else {
       const optional = !required.includes(objName)
       let type = ''
       for (let i = 0; i < refsIsA.length; i++) {
         if (type !== '') type += separator
-        type += getType(refsIsA[i], rootSchema)
+        type += getSchemaType(refsIsA[i], rootSchema)
       }
       for (let i = 0; i < refsAnyOf.length; i++) {
         if (type !== '') type += separator
         type += refsAnyOf[i].title
       }
       if (type === '') type = getDefaultPropertyType(config, objName)
-      if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+      if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
     }
 
     if (obj.allOf) {
@@ -213,22 +213,22 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
   } else {
     if (obj.$ref) {
       if (obj.classRelation && obj.classRelation === 'is-a') {
-        const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
-        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+        const type = getSchemaType(obj, rootSchema) || getDefaultPropertyType(config, objName)
+        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
       } else {
-        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
         result.push(...processProperties(json.get(rootSchema, obj.$ref.slice(1)), rootSchema, prefixedProperty, config))
       }
     } else {
       if (obj.type === 'object' && obj.properties) {
-        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('object', prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
         result.push(...processProperties(obj, rootSchema, prefixedProperty, config))
       } else if (obj.type === 'array' && obj.items) {
-        if (!rootElement) result.push(...writeProperty('array', prefixedProperty, obj.description, optional, defaultValue, config))
+        if (!rootElement) result.push(...writeProperty('array', prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
         result.push(...processItems(obj, rootSchema, prefixedProperty, config))
       } else {
-        const type = getType(obj, rootSchema) || getDefaultPropertyType(config, objName)
-        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, config))
+        const type = getSchemaType(obj, rootSchema) || getDefaultPropertyType(config, objName)
+        if (!rootElement) result.push(...writeProperty(type, prefixedProperty, obj.description, optional, defaultValue, obj, rootSchema, config))
       }
     }
   }
@@ -270,7 +270,7 @@ function getSchemaType (schema, rootSchema) {
   return schema.type
 }
 
-function getType (schema, config, type) {
+function getType (schema, rootSchema, config, type) {
   const typeCheck = type || schema.type
   let typeMatch
   if (schema.format) {
@@ -295,7 +295,7 @@ function getType (schema, config, type) {
     typeStr = ` {${
       typeMatch === ''
         ? ''
-        : typeMatch || type || getSchemaType(schema, schema)
+        : typeMatch || type || getSchemaType(schema, rootSchema)
       }}`
   }
 
@@ -346,7 +346,7 @@ function writeDescription (schema, rootSchema, config) {
     description = config.autoDescribe ? generateDescription(schema.title, schema.type) : ''
   }
 
-  const type = getType(schema, config)
+  const type = getType(schema, rootSchema, config)
 
   if (description || config.addDescriptionLineBreak) {
     result.push(...wrapDescription(config, description))
@@ -358,8 +358,8 @@ function writeDescription (schema, rootSchema, config) {
   return result
 }
 
-function writeProperty (type, field, description = '', optional, defaultValue, schema, config) {
-  const typeExpression = getType(schema, config, type)
+function writeProperty (type, field, description = '', optional, defaultValue, schema, rootSchema, config) {
+  const typeExpression = getType(schema, rootSchema, config, type)
 
   let fieldTemplate = ' '
   if (optional) {

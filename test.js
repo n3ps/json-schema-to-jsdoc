@@ -363,6 +363,7 @@ describe('Schemas with items', function () {
         }
       },
       type: 'array',
+      minItems: 1,
       items: [{
         $ref: '#/$defs/definitionType',
         classRelation: 'is-a'
@@ -380,7 +381,7 @@ describe('Schemas with items', function () {
     expect(generate(schema)).toEqual(expected)
   })
 
-  it('Schema with `$ref` (array with items object)', function () {
+  it('Schema with `$ref` (array with items object) ,default', function () {
     const schema = {
       $defs: { // New name for `definitions`
         definitionType: {
@@ -391,6 +392,31 @@ describe('Schemas with items', function () {
       type: 'array',
       items: {
         $ref: '#/$defs/definitionType'
+      }
+    }
+    const expected = `/**
+ * @typedef {array}
+ */
+
+/**
+ * @typedef {number} customNumber
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Schema with `$ref` (array with items object), is-a', function () {
+    const schema = {
+      $defs: { // New name for `definitions`
+        definitionType: {
+          title: 'customNumber',
+          type: 'number'
+        }
+      },
+      type: 'array',
+      items: {
+        $ref: '#/$defs/definitionType',
+        classRelation: 'is-a'
       }
     }
     const expected = `/**
