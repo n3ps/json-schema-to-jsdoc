@@ -145,6 +145,7 @@ describe('Schemas with properties', () => {
             aNestedArrayProp: {
               description: 'Array desc.',
               type: 'array',
+              minItems: 1,
               items: [
                 {
                   type: 'number'
@@ -235,7 +236,7 @@ describe('Schemas with properties', () => {
 
     const expected = `/**
  * @typedef {PlainObject} NestedType
- * @property {object} cfg
+ * @property {PlainObject} cfg
  */
 `
 
@@ -336,6 +337,7 @@ describe('Schemas with items', function () {
         }
       },
       type: 'array',
+      minItems: 1,
       items: [{
         $ref: '#/$defs/definitionType'
       }]
@@ -405,6 +407,7 @@ describe('Schemas with items', function () {
   it('Array with items', function () {
     const schema = {
       type: 'array',
+      minItems: 3,
       items: [
         {
           type: 'string'
@@ -426,6 +429,10 @@ describe('Schemas with items', function () {
         },
         {
           enum: ['hello', 'world']
+        },
+        {
+          type: 'string',
+          default: 'hello'
         }
       ]
     }
@@ -435,8 +442,9 @@ describe('Schemas with items', function () {
  * @property {object} 1
  * @property {boolean} [1.aNestedProp] Boolean desc.
  * @property {?string} 2
- * @property {string|number} 3
- * @property {enum} 4
+ * @property {string|number} [3]
+ * @property {enum} [4]
+ * @property {string} [5="hello"]
  */
 `
     expect(generate(schema)).toEqual(expected)
@@ -445,9 +453,11 @@ describe('Schemas with items', function () {
   it('Array with untyped property', function () {
     const schema = {
       type: 'array',
+      minItems: 1,
       items: [
         {
           type: 'array',
+          minItems: 2,
           items: [
             {
             },
@@ -1156,6 +1166,115 @@ describe('option: `types`', () => {
   })
 })
 
+describe('option: `formats`', () => {
+  it('Simple object with `formats`: null', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: null
+    })).toEqual(expected)
+  })
+
+  it('Simple object with `formats`: null for format', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: null
+      }
+    })).toEqual(expected)
+  })
+
+  it('Simple object with `formats`: null for type and format', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: null
+        }
+      }
+    })).toEqual(expected)
+  })
+
+  it('Simple object with empty string `formats`', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef {}
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: ''
+        }
+      }
+    })).toEqual(expected)
+  })
+  it('Simple object with `formats`', function () {
+    const schema = {
+      type: 'object',
+      format: 'special'
+    }
+    const expected = `/**
+ * @typedef {PlainObject}
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        special: {
+          object: 'PlainObject'
+        }
+      }
+    })).toEqual(expected)
+  })
+
+  it('Object with properties using `formats`', function () {
+    const schema = {
+      type: 'object',
+      properties: {
+        anHTMLProp: {
+          type: 'string',
+          format: 'html'
+        }
+      }
+    }
+    const expected = `/**
+ * @typedef {object}
+ * @property {HTML} [anHTMLProp]
+ */
+`
+    expect(generate(schema, {
+      formats: {
+        html: {
+          string: 'HTML'
+        }
+      }
+    })).toEqual(expected)
+  })
+})
+
 describe('option: `propertyNameAsType`', function () {
   it('Object with untyped property', function () {
     const schema = {
@@ -1468,7 +1587,7 @@ describe('option `defaultPropertyType`', function () {
     })).toEqual(expected)
   })
 
-  it('Object with untyped property and `false` `defaultPropertyType`', function () {
+  it('Object with untyped property and `null` `defaultPropertyType`', function () {
     const schema = {
       type: 'object',
       properties: {
@@ -1606,6 +1725,33 @@ describe('Examples', () => {
     const result = jsdoc(schema, {
       types: {
         object: 'PlainObject'
+      }
+    })
+    expect(result).toEqual(expected)
+  })
+
+  it('`formats`', () => {
+    const schema = {
+      title: 'Info',
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string', format: 'html', description: 'The HTML source'
+        }
+      },
+      required: ['code']
+    }
+
+    const expected = `/**
+ * @typedef {object} Info
+ * @property {HTML} code The HTML source
+ */
+`
+    const result = jsdoc(schema, {
+      formats: {
+        html: {
+          string: 'HTML'
+        }
       }
     })
     expect(result).toEqual(expected)

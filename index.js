@@ -99,15 +99,16 @@ function processItems (schema, rootSchema, base, config) {
     const root = base ? `${base}.` : ''
     const prefixedProperty = root + i
     const defaultValue = item.default
+    const optional = !schema.minItems || i >= schema.minItems
     if (item.type === 'array' && item.items) {
-      result.push(...writeProperty('array', prefixedProperty, item.description, false, defaultValue, config))
+      result.push(...writeProperty('array', prefixedProperty, item.description, optional, defaultValue, schema, config))
       result.push(...processItems(item, rootSchema, prefixedProperty, config))
     } else if (item.type === 'object' && item.properties) {
-      result.push(...writeProperty('object', prefixedProperty, item.description, false, defaultValue, config))
+      result.push(...writeProperty('object', prefixedProperty, item.description, optional, defaultValue, schema, config))
       result.push(...processProperties(item, rootSchema, prefixedProperty, config))
     } else {
-      const type = getType(item, rootSchema) || getDefaultPropertyType(config)
-      result.push(...writeProperty(type, prefixedProperty, item.description, false, defaultValue, config))
+      const type = getSchemaType(item, rootSchema) || getDefaultPropertyType(config)
+      result.push(...writeProperty(type, prefixedProperty, item.description, optional, defaultValue, item, config))
     }
   })
   return result
@@ -235,6 +236,72 @@ function processObject (obj, objName, prefixedProperty, required, rootSchema, co
   return result
 }
 
+function getSchemaType (schema, rootSchema) {
+  if (schema.$ref) {
+    const ref = json.get(rootSchema, schema.$ref.slice(1))
+    if (schema.classRelation && schema.classRelation === 'is-a') {
+      return ref.title
+    } else {
+      return ref.type
+    }
+  }
+
+  if (schema.enum) {
+    if (schema.type === 'string') {
+      return `"${schema.enum.join('"|"')}"`
+    }
+    if (
+      schema.type === 'number' || schema.type === 'integer' ||
+      schema.type === 'boolean'
+    ) {
+      return `${schema.enum.join('|')}`
+    }
+    return schema.type === 'null' ? 'null' : 'enum'
+  }
+
+  if (Array.isArray(schema.type)) {
+    if (schema.type.includes('null')) {
+      return `?${schema.type[0]}`
+    } else {
+      return schema.type.join('|')
+    }
+  }
+
+  return schema.type
+}
+
+function getType (schema, config, type) {
+  const typeCheck = type || schema.type
+  let typeMatch
+  if (schema.format) {
+    typeMatch = config.formats && config.formats[schema.format] &&
+      config.formats[schema.format][typeCheck]
+  }
+  if (typeMatch === undefined || typeMatch === null) {
+    typeMatch = config.types && config.types[typeCheck]
+  }
+
+  let typeStr
+  if (config.types === null || config.formats === null ||
+    (config.formats && (
+      (config.formats[schema.format] === null) ||
+      (config.formats[schema.format] &&
+        config.formats[schema.format][typeCheck] === null)
+    )) ||
+    (typeMatch !== '' && !typeMatch && (type === null || type === ''))
+  ) {
+    typeStr = ''
+  } else {
+    typeStr = ` {${
+      typeMatch === ''
+        ? ''
+        : typeMatch || type || getSchemaType(schema, schema)
+      }}`
+  }
+
+  return typeStr
+}
+
 function processDefinitions (defs, rootSchema, base, config) {
   const result = []
 
@@ -278,18 +345,8 @@ function writeDescription (schema, rootSchema, config) {
   if (description === undefined) {
     description = config.autoDescribe ? generateDescription(schema.title, schema.type) : ''
   }
-  const typeMatch = config.types && config.types[schema.type]
 
-  let type
-  if (config.types === null) {
-    type = ''
-  } else {
-    type = ` {${
-      typeMatch === ''
-        ? ''
-        : typeMatch || getType(schema, rootSchema)
-      }}`
-  }
+  const type = getType(schema, config)
 
   if (description || config.addDescriptionLineBreak) {
     result.push(...wrapDescription(config, description))
@@ -301,12 +358,14 @@ function writeDescription (schema, rootSchema, config) {
   return result
 }
 
-function writeProperty (type, field, description = '', optional, defaultValue, config) {
-  let fieldTemplate
+function writeProperty (type, field, description = '', optional, defaultValue, schema, config) {
+  const typeExpression = getType(schema, config, type)
+
+  let fieldTemplate = ' '
   if (optional) {
-    fieldTemplate = `[${field}${defaultValue === undefined ? '' : `=${JSON.stringify(defaultValue)}`}]`
+    fieldTemplate += `[${field}${defaultValue === undefined ? '' : `=${JSON.stringify(defaultValue)}`}]`
   } else {
-    fieldTemplate = field
+    fieldTemplate += field
   }
 
   let desc
@@ -317,43 +376,7 @@ function writeProperty (type, field, description = '', optional, defaultValue, c
   } else {
     desc = ` ${description}`
   }
-  const typeExpression = type === null ? '' : `{${type}} `
-  return wrapDescription(config, `@property ${typeExpression}${fieldTemplate}${desc}`)
-}
-
-function getType (schema, rootSchema) {
-  if (schema.$ref) {
-    const ref = json.get(rootSchema, schema.$ref.slice(1))
-    if (schema.classRelation && schema.classRelation === 'is-a') {
-      return ref.title
-    } else {
-      return ref.type
-    }
-  }
-
-  if (schema.enum) {
-    if (schema.type === 'string') {
-      return `"${schema.enum.join('"|"')}"`
-    }
-    if (
-      schema.type === 'number' || schema.type === 'integer' ||
-      schema.type === 'boolean'
-    ) {
-      return `${schema.enum.join('|')}`
-    }
-
-    return schema.type === 'null' ? 'null' : 'enum'
-  }
-
-  if (Array.isArray(schema.type)) {
-    if (schema.type.includes('null')) {
-      return `?${schema.type[0]}`
-    } else {
-      return schema.type.join('|')
-    }
-  }
-
-  return schema.type
+  return wrapDescription(config, `@property${typeExpression}${fieldTemplate}${desc}`)
 }
 
 function upperFirst (str) {
