@@ -1,0 +1,23 @@
+{
+  "name": "json-schema-to-jsdoc-site",
+  "version": "0.0.1",
+  "author": "Francis Nepomuceno",
+
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "json-schema-to-jsdoc": "^1.1.0",
+    "vue": "^3.0.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.1.5",
+    "@vue/compiler-sfc": "^3.0.5",
+    "autoprefixer": "^10.2.5",
+    "postcss": "^8.2.8",
+    "tailwindcss": "^2.0.3",
+    "vite": "^2.1.0"
+  }
+}
