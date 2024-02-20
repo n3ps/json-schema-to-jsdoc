@@ -114,6 +114,78 @@ describe('Simple schemas', () => {
     expect(generate(schema)).toEqual(expected)
   })
 
+  it('String with const', function () {
+    const schema = {
+      type: 'string',
+      const: 'value'
+    }
+    const expected = `/**
+ * @typedef {"value"}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Number with const', function () {
+    const schema = {
+      type: 'number',
+      const: 23.3
+    }
+    const expected = `/**
+ * @typedef {23.3}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Integer with const', function () {
+    const schema = {
+      type: 'integer',
+      const: 42
+    }
+    const expected = `/**
+ * @typedef {42}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('Boolean with const', function () {
+    const schema = {
+      type: 'boolean',
+      const: true
+    }
+    const expected = `/**
+ * @typedef {true}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('null with const', function () {
+    const schema = {
+      type: 'null',
+      const: null
+    }
+    const expected = `/**
+ * @typedef {null}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
+  it('null with const complex type', function () {
+    const schema = {
+      type: 'array',
+      const: ['red', 'green']
+    }
+    const expected = `/**
+ * @typedef {const}
+ */
+`
+    expect(generate(schema)).toEqual(expected)
+  })
+
   it('Simple array with title', function () {
     const schema = {
       title: 'special',

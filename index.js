@@ -154,7 +154,25 @@ function getSchemaType (schema, rootSchema) {
     ) {
       return `${schema.enum.join('|')}`
     }
+    // Enum can represent more complex types such as array or object
+    // It can also include a mixture of different types
+    // Currently, these scenarios are not handled
     return schema.type === 'null' ? 'null' : 'enum'
+  }
+
+  if (schema.const !== undefined) {
+    if (schema.type === 'string') {
+      return `"${schema.const}"`
+    }
+    if (
+      schema.type === 'number' || schema.type === 'integer' ||
+      schema.type === 'boolean'
+    ) {
+      return `${schema.const}`
+    }
+    // Const can also be of more complex types like arrays or objects
+    // As of now, these cases are not addressed
+    return schema.type === 'null' ? 'null' : 'const'
   }
 
   if (Array.isArray(schema.type)) {
